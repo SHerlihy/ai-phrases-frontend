@@ -12,19 +12,7 @@ async function getXmlString(xmlFilePath: string): Promise<[undefined, string] | 
 }
 
 const options = {
-    // 1. Strip the XML declaration and attributes like xmlns
-    compact: true,
-    spaces: 4,
-    // 2. Remove the XML namespace prefixes (like xmlns:s3)
-    ignoreAttributes: true,
-    // 3. Force the 'Contents' element into an array even if there is only one
-    // This makes the iteration logic simpler and safer for future data
-    elementNameFn: (name) => {
-        if (name === 'Contents') {
-            return 'ContentsArray';
-        }
-        return name;
-    }
+    compact: true
 };
 
 describe("xml to json", ()=>{
@@ -43,7 +31,7 @@ describe("xml to json", ()=>{
             }
             
             const listObj = JSON.parse(xml2json(xmlString, options))
-            let contents = listObj.ListBucketResult.ContentsArray;
+            let contents = listObj.ListBucketResult.Contents;
             if (!Array.isArray(contents)){
                 contents = [contents]
             }
