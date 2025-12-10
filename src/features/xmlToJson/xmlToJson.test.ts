@@ -22,7 +22,9 @@ describe("xml to json", ()=>{
                 throw err
             }
             
-            const getJson = xml2json(xmlString)
+            const getObj = JSON.parse(xml2json(xmlString, options))
+            let contents = getObj;
+            console.log(contents)
     })
     it("returns list response json", async ()=> {
             const [err, xmlString] = await getXmlString('./list.xml');
