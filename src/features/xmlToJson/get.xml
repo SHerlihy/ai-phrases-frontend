@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <service name="data-processor">
+        <endpoint>
+            <url>https://api.internal.com/v1</url>
+            <timeout>5000</timeout>
+        </endpoint>
+        <settings>
+            <max_retries>3</max_retries>
+        </settings>
+    </service>
+</configuration>
+
+<!-- body is just file contents??? -->
