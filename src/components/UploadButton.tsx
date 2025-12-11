@@ -12,7 +12,8 @@ const UploadButton = (
 ) => {
     return (
         <Button
-            variant="ghost"
+            disabled={isWorking ? true : false}
+            variant="default"
             onClick={handleClick}
         >
             Upload

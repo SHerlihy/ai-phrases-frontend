@@ -1,27 +1,39 @@
-import UploadButton from '@/components/UploadButton';
+import HasChangedValue from '@/components/HasChangedValue';
 import type { Meta, StoryObj } from '@storybook/react';
 import { fn } from '@storybook/test';
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
 const meta = {
-  title: 'UploadButton',
-  component: UploadButton,
-  tags: ['autodocs'],
-  args: { handleClick: fn() },
-} satisfies Meta<typeof UploadButton>;
+    title: 'HasChangedValue',
+    component: HasChangedValue,
+    tags: ['autodocs'],
+    args: {
+        value: "datetime",
+        handleClick: fn()
+    },
+} satisfies Meta<typeof HasChangedValue>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 // More on writing stories with args: https://storybook.js.org/docs/writing-stories/args
-export const Working: Story = {
+export const Value: Story = {
     args: {
-        isWorking: true,
+        isWorking: false,
+        hasChanged: false
     }
 };
 
-export const Ready: Story = {
+export const Working: Story = {
+    args: {
+        isWorking: true,
+        hasChanged: false
+    }
+};
+
+export const Changed: Story = {
     args: {
         isWorking: false,
+        hasChanged: true
     }
 };
