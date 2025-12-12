@@ -8,6 +8,7 @@ const StoryBox = ({ story }: Props) => {
     return (
         <Textarea
             placeholder="Paste your story here :)"
+            className={"h-full"}
         >
             {story}
         </Textarea>

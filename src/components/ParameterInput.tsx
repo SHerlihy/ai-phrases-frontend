@@ -1,6 +1,8 @@
+import { Input } from "./ui/input"
+
 const ParameterInput = () => {
   return (
-    <input/>
+    <Input/>
   )
 }
 
