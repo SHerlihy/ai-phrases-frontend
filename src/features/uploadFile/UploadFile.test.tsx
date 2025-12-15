@@ -87,7 +87,46 @@ describe('Successful upload', () => {
         )
         screen.debug();
     })
+
     it('shows pending feedback', () => {
+        const { promise, resolve, reject } = Promise.withResolvers()
+        const successPostFile: HandleFileUpload = async () => {
+            await promise
+            return postFileSuccessStr
+        }
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <UploadFileModel
+                    title='Example'
+                    getInitFeedback={successInitFeedback}
+                    postFile={successPostFile}
+                />
+            </QueryClientProvider>
+        )
+        //change file
+    })
+
+    it('shows success feedback', () => {
+        const { promise, resolve, reject } = Promise.withResolvers()
+        const successPostFile: HandleFileUpload = async () => {
+            await promise
+            return postFileSuccessStr
+        }
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <UploadFileModel
+                    title='Example'
+                    getInitFeedback={successInitFeedback}
+                    postFile={successPostFile}
+                />
+            </QueryClientProvider>
+        )
+        //change file
+    })
+
+    it('shows error feedback', () => {
         const { promise, resolve, reject } = Promise.withResolvers()
         const successPostFile: HandleFileUpload = async () => {
             await promise
