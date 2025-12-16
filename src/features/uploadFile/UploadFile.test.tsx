@@ -3,8 +3,7 @@ import { render, Screen, screen } from '@testing-library/react';
 import userEvent, { UserEvent } from '@testing-library/user-event';
 import UploadFileModel, { FEEDBACK_PENDING, GetString, HandleFileUpload } from './UploadFileModel';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { LABEL_TEXT } from '@/components/UploadButton';
-import { upload } from '@testing-library/user-event/dist/cjs/utility/upload.js';
+import { LABEL_TEXT } from '@/components/UploadInput';
 
 const queryClient = new QueryClient()
 
@@ -13,7 +12,7 @@ describe('UploadPhrases', () => {
     const successInitFeedback: GetString = async () => { return initFeedbackSuccessStr }
 
     const postFileSuccessStr = "post success"
-    const successPostFile: HandleFileUpload = async () => { return postFileSuccessStr }
+    const successPostFile: HandleFileUpload = async () => { return }
     it('renders the component', () => {
         render(
             <QueryClientProvider client={queryClient}>
@@ -138,7 +137,6 @@ describe('Successful upload', () => {
         const { promise, resolve, reject } = withResolvers()
         const successPostFile: HandleFileUpload = async () => {
             await promise
-            return feedbackSuccess
         }
 
         render(
@@ -157,7 +155,6 @@ describe('Successful upload', () => {
         const { promise, resolve, reject } = withResolvers()
         const successPostFile: HandleFileUpload = async () => {
             await promise
-            return feedbackSuccess
         }
 
         render(

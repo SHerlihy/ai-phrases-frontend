@@ -3,7 +3,7 @@ import { ChangeEvent, useEffect, useState } from 'react'
 import UploadFileView from './UploadFileView'
 
 export type GetString = () => Promise<string>
-export type HandleFileUpload = (e: ChangeEvent<HTMLInputElement>) => Promise<string>
+export type HandleFileUpload = (e: ChangeEvent<HTMLInputElement>) => Promise<void>
 
 export const FEEDBACK_PENDING = "Pending..."
 export const FEEDBACK_ERROR = "Error"
@@ -55,7 +55,7 @@ const UploadFileModel = ({
             hasChanged={false}
             isWorking={false}
             handleClickValue={() => { }}
-            handleClickUpload={firstUpload}
+            handleChangeUpload={firstUpload}
         />
     }
 
@@ -81,7 +81,7 @@ const UploadFileModel = ({
         hasChanged={isSuccess}
         isWorking={isPending}
         handleClickValue={handleClickValue}
-        handleClickUpload={mutate}
+        handleChangeUpload={mutate}
     />
 }
 

@@ -1,13 +1,13 @@
+import { ChangeEvent } from 'react'
 import { Input } from './ui/input'
-import { HandleFileUpload } from '@/features/uploadFile/UploadFileModel'
 
 export const LABEL_TEXT = "Upload file input"
 
 export type Props = {
     isWorking: boolean,
-    handleChange: HandleFileUpload
+    handleChange: (e: ChangeEvent<HTMLInputElement>)=>void
 }
-const UploadButton = (
+const UploadInput = (
     {
         isWorking,
         handleChange
@@ -25,4 +25,4 @@ const UploadButton = (
     )
 }
 
-export default UploadButton
+export default UploadInput

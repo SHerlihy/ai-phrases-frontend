@@ -1,9 +1,8 @@
 import HasChangedValue from '@/components/HasChangedValue'
-import UploadButton from '@/components/UploadButton'
 
 import { Props as PropsValue } from '@/components/HasChangedValue'
-import { Props as PropsUpload } from '@/components/UploadButton'
-import { Card, CardAction, CardTitle } from '@/components/ui/card'
+import UploadInput, { Props as PropsUpload } from '@/components/UploadInput'
+import { Card, CardTitle } from '@/components/ui/card'
 
 export type Shared = Omit<PropsValue, 'handleClick'> & Omit<PropsUpload, 'handleChange'>
 
@@ -13,7 +12,7 @@ export type Props = {
     hasChanged: boolean,
     isWorking: boolean,
     handleClickValue: PropsValue['handleClick']
-    handleClickUpload: PropsUpload['handleChange']
+    handleChangeUpload: PropsUpload['handleChange']
 }
 
 const UploadFileView = (
@@ -23,7 +22,7 @@ const UploadFileView = (
         hasChanged,
         isWorking,
         handleClickValue,
-        handleClickUpload
+        handleChangeUpload
     }: Props
 ) => {
     const shared: Shared = {
@@ -37,7 +36,7 @@ const UploadFileView = (
             <CardTitle>
                 <p style={{ 'lineHeight': 2 }}>{title}:</p>
             </CardTitle>
-            <UploadButton {...shared} handleChange={handleClickUpload} />
+            <UploadInput {...shared} handleChange={handleChangeUpload} />
             <HasChangedValue {...shared} handleClick={handleClickValue} />
         </Card>
     )
