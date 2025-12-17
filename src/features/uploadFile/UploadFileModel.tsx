@@ -18,7 +18,7 @@ const UploadFileModel = ({
     postFile: HandleFileUpload
 }) => {
     const [feedback, setFeedback] = useState("")
-    const [noUpload, setNoUpload] = useState(true)
+    // const [noUpload, setNoUpload] = useState(true)
 
     const { isPending: initPending, isError: initError, data: initData } = useQuery({
         queryKey: [title],
@@ -44,11 +44,11 @@ const UploadFileModel = ({
     })
 
     const firstUpload = (e: ChangeEvent<HTMLInputElement>) => {
-        setNoUpload(true)
+        // setNoUpload(true)
         mutate(e)
     }
 
-    if (noUpload) {
+    // if (noUpload) {
         return <UploadFileView
             title={title}
             value={feedback}
@@ -57,7 +57,7 @@ const UploadFileModel = ({
             handleClickValue={() => { }}
             handleChangeUpload={firstUpload}
         />
-    }
+    // }
 
     useEffect(() => {
         if (isPending) {

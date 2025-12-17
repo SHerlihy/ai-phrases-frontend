@@ -5,9 +5,9 @@ import UploadFileModel, { FEEDBACK_PENDING, GetString, HandleFileUpload } from '
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { LABEL_TEXT } from '@/components/UploadInput';
 
-const queryClient = new QueryClient()
 
 describe('UploadPhrases', () => {
+    const queryClient = new QueryClient()
     const initFeedbackSuccessStr = "init success"
     const successInitFeedback: GetString = async () => { return initFeedbackSuccessStr }
 
@@ -112,6 +112,8 @@ async function uploadFile (screen: Screen, user: UserEvent, file?: File): Promis
 }
 
 describe('Init feedback', ()=>{
+    const queryClient = new QueryClient()
+
     const withResolvers = () => {
         let resolve: (value: unknown) => void;
         let reject: (value: unknown) => void;
