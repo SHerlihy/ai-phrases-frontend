@@ -22,7 +22,8 @@ const UploadFileModel = ({
 
     const { isPending: initPending, isError: initError, data: initData } = useQuery({
         queryKey: [title],
-        queryFn: getInitFeedback
+        queryFn: getInitFeedback,
+        retry: false
     })
 
     useEffect(() => {
@@ -39,24 +40,29 @@ const UploadFileModel = ({
         }
     }, [initPending, initError, initData])
 
-    const { isPending, isSuccess, isError, data, mutate } = useMutation({
-        mutationFn: postFile
-    })
-
-    const firstUpload = (e: ChangeEvent<HTMLInputElement>) => {
-        // setNoUpload(true)
-        mutate(e)
-    }
-
+    // const { isPending, isSuccess, isError, data, mutate } = useMutation({
+    //     mutationFn: postFile
+    // })
+    //
+    // const firstUpload = (e: ChangeEvent<HTMLInputElement>) => {
+    //     // setNoUpload(true)
+    //     mutate(e)
+    // }
+    //
     // if (noUpload) {
-        return <UploadFileView
-            title={title}
-            value={feedback}
-            hasChanged={false}
-            isWorking={false}
-            handleClickValue={() => { }}
-            handleChangeUpload={firstUpload}
-        />
+    return (
+        <>
+            <UploadFileView
+                title={title}
+                value={feedback}
+                hasChanged={false}
+                isWorking={false}
+                handleClickValue={() => { }}
+                // handleChangeUpload={firstUpload}
+                handleChangeUpload={(e)=>{}}
+            />
+        </>
+    )
     // }
 
     useEffect(() => {
@@ -71,7 +77,7 @@ const UploadFileModel = ({
         if (data) {
             setFeedback(data)
         }
-    }, [ isPending, isError, data ])
+    }, [isPending, isError, data])
 
     const handleClickValue = () => { }
 

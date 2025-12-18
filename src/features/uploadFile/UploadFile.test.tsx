@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { render, Screen, screen } from '@testing-library/react';
+import { act, render, Screen, screen, waitFor } from '@testing-library/react';
 import userEvent, { UserEvent } from '@testing-library/user-event';
-import UploadFileModel, { FEEDBACK_PENDING, GetString, HandleFileUpload } from './UploadFileModel';
+import UploadFileModel, { FEEDBACK_ERROR, FEEDBACK_PENDING, GetString, HandleFileUpload } from './UploadFileModel';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { LABEL_TEXT } from '@/components/UploadInput';
 
@@ -86,9 +86,119 @@ describe('UploadPhrases', () => {
     })
 })
 
+const withResolvers = () => {
+    let resolve: (value: string) => void;
+    let reject: (value: Error) => void;
+
+    const promise = new Promise((res, rej) => {
+        resolve = res
+        reject = rej
+    })
+
+    // @ts-ignore
+    if (!resolve || !reject) {
+        throw new Error("from withResolvers")
+    }
+
+    return { promise, resolve, reject }
+}
+
+function getFeedbackResolvers() {
+    const { promise, resolve, reject } = withResolvers()
+    const getInitFeedback: GetString = async () => { return await promise as Promise<string> }
+
+    return { getInitFeedback, resolve, reject }
+}
+
+describe('Init feedback', () => {
+
+    const successPostFile: HandleFileUpload = async () => { return }
+
+    it('shows pending feedback', async () => {
+
+        const queryClient = new QueryClient()
+        const { getInitFeedback } = getFeedbackResolvers()
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <UploadFileModel
+                    title='Example'
+                    getInitFeedback={getInitFeedback}
+                    postFile={successPostFile}
+                />
+            </QueryClientProvider>
+        )
+
+        let feedbackPending: HTMLElement | null;
+
+        feedbackPending = await screen.findByText(FEEDBACK_PENDING)
+        expect(feedbackPending).not.toBeNull()
+
+    })
+
+    it('shows error feedback', async () => {
+        const findRegexp = new RegExp(FEEDBACK_ERROR)
+        const queryClient = new QueryClient()
+        const { getInitFeedback, resolve, reject } = getFeedbackResolvers()
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <UploadFileModel
+                    title='Example'
+                    getInitFeedback={getInitFeedback}
+                    postFile={successPostFile}
+                />
+            </QueryClientProvider>
+        )
+
+        let feedback: HTMLElement | null;
+        feedback = screen.queryByText(findRegexp)
+        expect(feedback).toBeNull()
+
+        act(() => {
+            reject(new Error("Forced error"))
+        })
+
+        await waitFor(() => {
+            feedback = screen.queryByText(findRegexp)
+            expect(feedback).not.toBeNull()
+        })
+    })
+
+    it('shows success feedback', async () => {
+        const successStr = "Success in test"
+        const findRegexp = new RegExp(successStr)
+        const queryClient = new QueryClient()
+        const { getInitFeedback, resolve, reject } = getFeedbackResolvers()
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <UploadFileModel
+                    title='Example'
+                    getInitFeedback={getInitFeedback}
+                    postFile={successPostFile}
+                />
+            </QueryClientProvider>
+        )
+
+        let feedback: HTMLElement | null;
+        feedback = screen.queryByText(findRegexp)
+        expect(feedback).toBeNull()
+
+        act(() => {
+            resolve(successStr)
+        })
+
+        await waitFor(() => {
+            feedback = screen.queryByText(findRegexp)
+            expect(feedback).not.toBeNull()
+        })
+    })
+})
+
 type HTMLInputElementWithFiles = HTMLInputElement & { files: FileList }
-async function uploadFile (screen: Screen, user: UserEvent, file?: File): Promise<HTMLInputElementWithFiles>{
-    if(file === undefined){
+async function uploadFile(screen: Screen, user: UserEvent, file?: File): Promise<HTMLInputElementWithFiles> {
+    if (file === undefined) {
         file = new File(['hello'], 'hello.png', { type: 'image/png' })
     }
 
@@ -111,53 +221,55 @@ async function uploadFile (screen: Screen, user: UserEvent, file?: File): Promis
     return fileInput as HTMLInputElementWithFiles
 }
 
-describe('Init feedback', ()=>{
-    const queryClient = new QueryClient()
+function getFeedbackResolvers() {
+    const { promise, resolve, reject } = withResolvers()
+    const getInitFeedback: GetString = async () => { return await promise as Promise<string> }
 
-    const withResolvers = () => {
-        let resolve: (value: unknown) => void;
-        let reject: (value: unknown) => void;
+    return { getInitFeedback, resolve, reject }
+}
 
-        const promise = new Promise((res, rej) => {
-            resolve = res
-            reject = rej
+describe('Upload feedback', () => {
+
+    describe('from init feedback success', () => {
+
+        it('shows pending', async() => {
+
+            const successStr = "SUCCESS ON INIT"
+            const pendingPostFile: HandleFileUpload = async () => { return }
+            const queryClient = new QueryClient()
+            const { getInitFeedback, resolve, reject } = getFeedbackResolvers()
+
+            act(() => {
+
+                render(
+                    <QueryClientProvider client={queryClient}>
+                        <UploadFileModel
+                            title='Example'
+                            getInitFeedback={() => { return Promise.resolve(successStr) }}
+                            postFile={pendingPostFile}
+                        />
+                    </QueryClientProvider>
+                )
+
+            })
+
+            act(() => {
+                resolve(successStr)
+            })
+
+            let feedback: HTMLElement | null;
+            await waitFor(() => {
+                feedback = screen.queryByText(findRegexp)
+                expect(feedback).not.toBeNull()
+
+            })
+
         })
 
-        // @ts-ignore
-        if (!resolve || !reject) {
-            throw new Error("from withResolvers")
-        }
-
-        return { promise, resolve, reject }
-    }
-
-    const successPostFile: HandleFileUpload = async () => { return }
-
-    it('shows pending feedback', async () => {
-        const { promise, resolve, reject } = withResolvers()
-        const getInitFeedback: GetString = async () => {
-            console.log("PRE PROMISE")
-            await promise
-            console.log("POST PROMISE")
-            return "Success"
-        }
-
-        render(
-            <QueryClientProvider client={queryClient}>
-                <UploadFileModel
-                    title='Example'
-                    getInitFeedback={getInitFeedback}
-                    postFile={successPostFile}
-                />
-            </QueryClientProvider>
-        )
-
-        let feedbackPending: HTMLElement | null;
-
-        feedbackPending = await screen.findByText(FEEDBACK_PENDING)
-        expect(feedbackPending).not.toBeNull()
     })
+
 })
+
 
 // describe('Successful upload', () => {
 //     const initFeedbackSuccessStr = "init success"
@@ -227,47 +339,47 @@ describe('Init feedback', ()=>{
 //         expect(feedbackPending).not.toBeNull()
 //     })
 //
-    // it('shows success feedback', async () => {
-    //     const { promise, resolve, reject } = withResolvers()
-    //     const successPostFile: HandleFileUpload = async () => {
-    //         await promise
-    //         return feedbackSuccess
-    //     }
-    //
-    //     render(
-    //         <QueryClientProvider client={queryClient}>
-    //             <UploadFileModel
-    //                 title='Example'
-    //                 getInitFeedback={successInitFeedback}
-    //                 postFile={successPostFile}
-    //             />
-    //         </QueryClientProvider>
-    //     )
-    //     let feedback: HTMLElement|null;
-    //     feedback = screen.queryByText(feedbackSuccess)
-    //     expect(feedback).toBeNull()
-    //     //change file
-    //
-    //     resolve()
-    //     await screen.findByText(feedbackSuccess)
-    // })
-    //
-    // it('shows error feedback', () => {
-    //     const { promise, resolve, reject } = Promise.withResolvers()
-    //     const successPostFile: HandleFileUpload = async () => {
-    //         await promise
-    //         return postFileSuccessStr
-    //     }
-    //
-    //     render(
-    //         <QueryClientProvider client={queryClient}>
-    //             <UploadFileModel
-    //                 title='Example'
-    //                 getInitFeedback={successInitFeedback}
-    //                 postFile={successPostFile}
-    //             />
-    //         </QueryClientProvider>
-    //     )
-    //     //change file
-    // })
+// it('shows success feedback', async () => {
+//     const { promise, resolve, reject } = withResolvers()
+//     const successPostFile: HandleFileUpload = async () => {
+//         await promise
+//         return feedbackSuccess
+//     }
+//
+//     render(
+//         <QueryClientProvider client={queryClient}>
+//             <UploadFileModel
+//                 title='Example'
+//                 getInitFeedback={successInitFeedback}
+//                 postFile={successPostFile}
+//             />
+//         </QueryClientProvider>
+//     )
+//     let feedback: HTMLElement|null;
+//     feedback = screen.queryByText(feedbackSuccess)
+//     expect(feedback).toBeNull()
+//     //change file
+//
+//     resolve()
+//     await screen.findByText(feedbackSuccess)
+// })
+//
+// it('shows error feedback', () => {
+//     const { promise, resolve, reject } = Promise.withResolvers()
+//     const successPostFile: HandleFileUpload = async () => {
+//         await promise
+//         return postFileSuccessStr
+//     }
+//
+//     render(
+//         <QueryClientProvider client={queryClient}>
+//             <UploadFileModel
+//                 title='Example'
+//                 getInitFeedback={successInitFeedback}
+//                 postFile={successPostFile}
+//             />
+//         </QueryClientProvider>
+//     )
+//     //change file
+// })
 // })
