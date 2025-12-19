@@ -8,17 +8,6 @@ export async function catchError<T>(promise: Promise<T>): Promise<[undefined, T]
         })
 }
 
-export async function handleGET<TRes = any>(uri: string, abortSignal?: AbortSignal): Promise<[undefined, TRes] | [Error]> {
-    const [error, response] = await catchError(fetch(uri, { signal: abortSignal }))
-
-    if (error !== undefined) {
-        console.error(error.message)
-        return [error]
-    }
-
-    return [error, await response.json()]
-}
-
 export function allSettledToCatchError<T>(settled: PromiseSettledResult<[Error] | [undefined, T]>[]): Array<[undefined, T] | [Error]> {
     return settled.map((settledRes) => {
         if (settledRes.status === "rejected") {
@@ -29,3 +18,13 @@ export function allSettledToCatchError<T>(settled: PromiseSettledResult<[Error] 
     })
 }
 
+export async function handleGET<TRes = any>(uri: string, abortSignal?: AbortSignal): Promise<[undefined, TRes] | [Error]> {
+    const [error, response] = await catchError(fetch(uri, { signal: abortSignal }))
+
+    if (error !== undefined) {
+        console.error(error.message)
+        return [error]
+    }
+
+    return [error, await response.json()]
+}

@@ -22,7 +22,7 @@ describe('App', () => {
         expect(document.activeElement).toBe(countButton)
     })
 
-it('click on count button', async ()=>{
+    it('click on count button', async () => {
         render(<ExamplePage />)
         const user = userEvent.setup()
 
@@ -35,7 +35,7 @@ it('click on count button', async ()=>{
             clickCount++
             within(countButton).getByText(`count is ${clickCount}`)
         }
-})
+    })
 
     it('press enter on count button', async () => {
         render(<ExamplePage />)
