@@ -17,17 +17,12 @@ const UploadFileModel = ({
     getInitFeedback: GetString,
     postFile: HandleFileUpload
 }) => {
-    const [isInit, setIsInit] = useState(true)
     const [feedback, setFeedback] = useState("")
 
     async function handleMutation(e?: ChangeEvent<HTMLInputElement>) {
 
-        if (isInit) {
-            return await getInitFeedback()
-        }
-
         if (!e) {
-            throw new Error("No event: handleMutation")
+            return await getInitFeedback()
         }
 
         return await postFile(e)
@@ -73,7 +68,7 @@ const UploadFileModel = ({
                 isWorking={false}
                 handleClickValue={() => { }}
                 handleChangeUpload={
-                    (e) => { setIsInit(false); mutate(e) }
+                    (e) => {  mutate(e) }
                 }
             />
         </>
