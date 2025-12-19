@@ -3,7 +3,7 @@ import { ChangeEvent, useEffect, useState } from 'react'
 import UploadFileView from './UploadFileView'
 
 export type GetString = () => Promise<string>
-export type HandleFileUpload = (e: ChangeEvent<HTMLInputElement>) => Promise<void>
+export type HandleFileUpload = (e: ChangeEvent<HTMLInputElement>) => Promise<string>
 
 export const FEEDBACK_PENDING = "Pending..."
 export const FEEDBACK_ERROR = "Error"
@@ -34,9 +34,11 @@ const UploadFileModel = ({
 
     }
 
-    const { isPending, isSuccess, isError, data, mutate } = useMutation({
+    const { isPending, isError, data, mutate } = useMutation({
         mutationFn: handleMutation,
-        retry: false
+        retry: false,
+        //bull
+        throwOnError: false
     })
 
     useEffect(() => {
@@ -62,12 +64,6 @@ const UploadFileModel = ({
     }, [isPending, isError, data])
 
 
-    // const firstUpload = (e: ChangeEvent<HTMLInputElement>) => {
-    //     // setNoUpload(true)
-    //     mutate(e)
-    // }
-    //
-    // if (noUpload) {
     return (
         <>
             <UploadFileView
@@ -76,37 +72,12 @@ const UploadFileModel = ({
                 hasChanged={false}
                 isWorking={false}
                 handleClickValue={() => { }}
-                // handleChangeUpload={firstUpload}
-                handleChangeUpload={(e) => { setIsInit(false), mutate(e) }}
+                handleChangeUpload={
+                    (e) => { setIsInit(false); mutate(e) }
+                }
             />
         </>
     )
-    // }
-
-    useEffect(() => {
-        if (isPending) {
-            setFeedback(FEEDBACK_PENDING)
-        }
-
-        if (isError) {
-            setFeedback(FEEDBACK_ERROR)
-        }
-
-        if (data) {
-            setFeedback(data)
-        }
-    }, [isPending, isError, data])
-
-    const handleClickValue = () => { }
-
-    return <UploadFileView
-        title={title}
-        value={feedback}
-        hasChanged={isSuccess}
-        isWorking={isPending}
-        handleClickValue={handleClickValue}
-        handleChangeUpload={mutate}
-    />
 }
 
 export default UploadFileModel;

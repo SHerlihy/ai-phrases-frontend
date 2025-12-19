@@ -5,14 +5,12 @@ import UploadFileModel, { FEEDBACK_ERROR, FEEDBACK_PENDING, GetString, HandleFil
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { LABEL_TEXT } from '@/components/UploadInput';
 
-
 describe('UploadPhrases', () => {
     const queryClient = new QueryClient()
     const initFeedbackSuccessStr = "init success"
     const successInitFeedback: GetString = async () => { return initFeedbackSuccessStr }
 
-    const postFileSuccessStr = "post success"
-    const successPostFile: HandleFileUpload = async () => { return }
+    const successPostFile: HandleFileUpload = async () => { return "from post" }
     it('renders the component', () => {
         render(
             <QueryClientProvider client={queryClient}>
@@ -112,7 +110,7 @@ function getInitFeedbackResolvers() {
 
 describe('Init feedback', () => {
 
-    const successPostFile: HandleFileUpload = async () => { return }
+    const successPostFile: HandleFileUpload = async () => { return "from post" }
 
     it('shows pending feedback', async () => {
 
@@ -223,7 +221,7 @@ async function uploadFile(screen: Screen, user: UserEvent, file?: File): Promise
 
 function getUploadResolvers() {
     const { promise, resolve, reject } = withResolvers()
-    const handleFileUpload: HandleFileUpload = async () => { return await promise as Promise<void> }
+    const handleFileUpload: HandleFileUpload = async () => { return await promise as Promise<string> }
 
     return { handleFileUpload, resolve, reject }
 }
@@ -231,6 +229,96 @@ function getUploadResolvers() {
 describe('Upload feedback', () => {
 
     describe('from init feedback success', () => {
+
+        it('shows success', async () => {
+
+            const successInit = "SUCCESS ON INIT"
+            const successPost = "SUCCESS ON POST"
+
+            const findRegexp = new RegExp(successPost)
+            const queryClient = new QueryClient()
+            const { handleFileUpload, resolve } = getUploadResolvers()
+
+            act(() => {
+
+                render(
+                    <QueryClientProvider client={queryClient}>
+                        <UploadFileModel
+                            title='Example'
+                            getInitFeedback={() => { return Promise.resolve(successInit) }}
+                            postFile={handleFileUpload}
+                        />
+                    </QueryClientProvider>
+                )
+
+            })
+
+            let feedback: HTMLElement | null;
+            await waitFor(() => {
+                feedback = screen.queryByText(new RegExp(successInit))
+                expect(feedback).not.toBeNull()
+            })
+
+            const user = userEvent.setup()
+
+            act(() => {
+                uploadFile(screen, user)
+            })
+
+            act(() => {
+                resolve(successPost)
+            })
+
+            await waitFor(() => {
+                feedback = screen.queryByText(findRegexp)
+                expect(feedback).not.toBeNull()
+            })
+
+        })
+
+        it('shows error', async () => {
+
+            const successStr = "SUCCESS ON INIT"
+            const findRegexp = new RegExp(FEEDBACK_ERROR)
+            const queryClient = new QueryClient()
+            const { handleFileUpload, reject } = getUploadResolvers()
+
+            act(() => {
+
+                render(
+                    <QueryClientProvider client={queryClient}>
+                        <UploadFileModel
+                            title='Example'
+                            getInitFeedback={() => { return Promise.resolve(successStr) }}
+                            postFile={handleFileUpload}
+                        />
+                    </QueryClientProvider>
+                )
+
+            })
+
+            let feedback: HTMLElement | null;
+            await waitFor(() => {
+                feedback = screen.queryByText(new RegExp(successStr))
+                expect(feedback).not.toBeNull()
+
+            })
+
+            const user = userEvent.setup()
+            act(() => {
+                uploadFile(screen, user)
+            })
+
+            act(() => {
+                reject(new Error("From upload file show error"))
+            })
+
+            await waitFor(() => {
+                feedback = screen.queryByText(findRegexp)
+                expect(feedback).not.toBeNull()
+            })
+
+        })
 
         it('shows pending', async () => {
 
