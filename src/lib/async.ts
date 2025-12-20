@@ -28,3 +28,30 @@ export async function handleGET<TRes = any>(uri: string, abortSignal?: AbortSign
 
     return [error, await response.json()]
 }
+
+
+type Resolve = (value: string) => void
+type Reject = (value: Error) => void
+type WithResolversRet = {
+    promise: Promise<unknown>;
+    resolve: Resolve;
+    reject: Reject;
+}
+
+export function withResolvers(): WithResolversRet {
+    let resolve: Resolve;
+    let reject: Reject;
+
+    const promise = new Promise((res, rej) => {
+        resolve = res
+        reject = rej
+    })
+
+    // @ts-ignore
+    if (!resolve || !reject) {
+        throw new Error("from withResolvers")
+    }
+
+    return { promise, resolve, reject }
+}
+

@@ -28,7 +28,7 @@ const UploadFileView = (
             </CardTitle>
             <UploadInput
                 handleChange={handleChangeUpload}
-                disabled={(isPending && !isInit)}
+                disabled={!isInit ? isPending : false}
             />
             <ConfirmFeedbackButton
                 feedback={feedback}
