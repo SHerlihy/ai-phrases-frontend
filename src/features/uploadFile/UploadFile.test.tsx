@@ -298,96 +298,185 @@ describe('Upload feedback', () => {
 
 })
 
-describe.only('Confirm feedback', () => {
+describe('Confirm feedback', () => {
 
-    async function renderInitSuccess() {
-        const initStr = "Success init"
-        const queryClient = new QueryClient()
-        const { getInitFeedback, resolve: initResolve } = getInitFeedbackResolvers()
-        const { handleFileUpload, resolve, reject } = getUploadResolvers()
+    describe('from init pending', () => {
+        async function renderInitPending() {
 
-        render(
-            <QueryClientProvider client={queryClient}>
-                <UploadFileModel
-                    title='Example'
-                    getInitFeedback={getInitFeedback}
-                    postFile={handleFileUpload}
-                />
-            </QueryClientProvider>
-        )
+            const queryClient = new QueryClient()
+            const { getInitFeedback, resolve: initResolve } = getInitFeedbackResolvers()
+            const { handleFileUpload, resolve, reject } = getUploadResolvers()
 
-        act(() => {
-            initResolve(initStr)
+            render(
+                <QueryClientProvider client={queryClient}>
+                    <UploadFileModel
+                        title='Example'
+                        getInitFeedback={getInitFeedback}
+                        postFile={handleFileUpload}
+                    />
+                </QueryClientProvider>
+            )
+
+            await screen.findByText(FEEDBACK_PENDING)
+
+            return { resolve, reject }
+        }
+
+        it('disables feedback button on upload', async () => {
+
+            const findRegexp = new RegExp(FEEDBACK_PENDING)
+
+            const { resolve, reject } = await renderInitPending()
+
+            const user = userEvent.setup()
+            await act(async () => {
+                await uploadFile(screen, user)
+            })
+
+            await waitFor(async () => {
+                const feedback: HTMLButtonElement = await screen.findByText(findRegexp)
+                expect(feedback.disabled === true)
+            })
+
         })
 
-        await screen.findByText(initStr)
+        it('enables feedback button on uploaded', async () => {
 
-        return { resolve, reject }
-    }
+            const uploadSuccess = "uploadSuccess"
+            const findRegexp = new RegExp(uploadSuccess)
 
-    it('disables feedback button on upload', async () => {
+            const { resolve, reject } = await renderInitPending()
 
-        const findRegexp = new RegExp(FEEDBACK_PENDING)
+            const user = userEvent.setup()
+            await act(async () => {
+                await uploadFile(screen, user)
+            })
 
-        const { resolve, reject } = await renderInitSuccess()
-        
+            act(() => {
+                resolve(uploadSuccess)
+            })
 
-        const user = userEvent.setup()
-        await act(async () => {
-            await uploadFile(screen, user)
+            await waitFor(async () => {
+                const feedback: HTMLButtonElement = await screen.findByText(findRegexp)
+                expect(feedback.disabled === false)
+            })
+
         })
 
-        await waitFor(async () => {
-            const feedback: HTMLButtonElement = await screen.findByText(findRegexp)
-            expect(feedback.disabled === true)
+        it('enables feedback button on error', async () => {
+
+            const uploadStr = "uploadError"
+            const findRegexp = new RegExp(FEEDBACK_ERROR)
+
+            const { resolve, reject } = await renderInitPending()
+
+            const user = userEvent.setup()
+            await act(async () => {
+                await uploadFile(screen, user)
+            })
+
+            act(() => {
+                reject(new Error(uploadStr))
+            })
+
+            await waitFor(async () => {
+                const feedback: HTMLButtonElement = await screen.findByText(findRegexp)
+                expect(feedback.disabled === false)
+            })
+
         })
 
     })
 
-    it('enables feedback button on uploaded', async () => {
+    describe('from init success', () => {
+        async function renderInitSuccess() {
+            const initStr = "Success init"
+            const queryClient = new QueryClient()
+            const { getInitFeedback, resolve: initResolve } = getInitFeedbackResolvers()
+            const { handleFileUpload, resolve, reject } = getUploadResolvers()
 
-        const uploadSuccess = "uploadSuccess"
-        const findRegexp = new RegExp(uploadSuccess)
+            render(
+                <QueryClientProvider client={queryClient}>
+                    <UploadFileModel
+                        title='Example'
+                        getInitFeedback={getInitFeedback}
+                        postFile={handleFileUpload}
+                    />
+                </QueryClientProvider>
+            )
 
-        const { resolve, reject } = await renderInitSuccess()
+            act(() => {
+                initResolve(initStr)
+            })
 
-        const user = userEvent.setup()
-        await act(async () => {
-            await uploadFile(screen, user)
+            await screen.findByText(initStr)
+
+            return { resolve, reject }
+        }
+
+        it('disables feedback button on upload', async () => {
+
+            const findRegexp = new RegExp(FEEDBACK_PENDING)
+
+            const { resolve, reject } = await renderInitSuccess()
+
+            const user = userEvent.setup()
+            await act(async () => {
+                await uploadFile(screen, user)
+            })
+
+            await waitFor(async () => {
+                const feedback: HTMLButtonElement = await screen.findByText(findRegexp)
+                expect(feedback.disabled === true)
+            })
+
         })
 
-        act(() => {
-            resolve(uploadSuccess)
+        it('enables feedback button on uploaded', async () => {
+
+            const uploadSuccess = "uploadSuccess"
+            const findRegexp = new RegExp(uploadSuccess)
+
+            const { resolve, reject } = await renderInitSuccess()
+
+            const user = userEvent.setup()
+            await act(async () => {
+                await uploadFile(screen, user)
+            })
+
+            act(() => {
+                resolve(uploadSuccess)
+            })
+
+            await waitFor(async () => {
+                const feedback: HTMLButtonElement = await screen.findByText(findRegexp)
+                expect(feedback.disabled === false)
+            })
+
         })
 
-        await waitFor(async () => {
-            const feedback: HTMLButtonElement = await screen.findByText(findRegexp)
-            expect(feedback.disabled === false)
+        it('enables feedback button on error', async () => {
+
+            const uploadStr = "uploadError"
+            const findRegexp = new RegExp(FEEDBACK_ERROR)
+
+            const { resolve, reject } = await renderInitSuccess()
+
+            const user = userEvent.setup()
+            await act(async () => {
+                await uploadFile(screen, user)
+            })
+
+            act(() => {
+                reject(new Error(uploadStr))
+            })
+
+            await waitFor(async () => {
+                const feedback: HTMLButtonElement = await screen.findByText(findRegexp)
+                expect(feedback.disabled === false)
+            })
+
         })
-
-    })
-
-    it('enables feedback button on error', async () => {
-
-        const uploadStr = "uploadError"
-        const findRegexp = new RegExp(uploadStr)
-
-        const { resolve, reject } = await renderInitSuccess()
-
-        const user = userEvent.setup()
-        await act(async () => {
-            await uploadFile(screen, user)
-        })
-
-        act(() => {
-            reject(new Error(uploadStr))
-        })
-
-        await waitFor(async () => {
-            const feedback: HTMLButtonElement = await screen.findByText(findRegexp)
-            expect(feedback.disabled === false)
-        })
-
     })
 
 })

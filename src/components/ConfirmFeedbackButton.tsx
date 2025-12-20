@@ -14,7 +14,7 @@ const ConfirmFeedbackButton = ({
 }: React.ComponentProps<"button"> & Props) => {
     return (
         <Button
-            disabled={feedback===FEEDBACK_PENDING}
+            disabled={isPending}
         >
             <p>{feedback}</p>
         </Button>
