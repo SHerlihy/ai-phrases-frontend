@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { ChangeEvent, useEffect, useState } from 'react'
 import UploadFileView from './UploadFileView'
 
@@ -22,14 +22,19 @@ const UploadFileModel = ({
     postFile: HandleFileUpload
 }) => {
     const [feedback, setFeedback] = useState<Feedback>(FEEDBACK_PENDING)
+    const [isInit, setIsInit] = useState(true)
 
     async function handleMutation(e?: ChangeEvent<HTMLInputElement>) {
 
         if (!e) {
             return await getInitFeedback()
         }
+        
+        setIsInit(false)
 
-        return await postFile(e)
+        const data = await postFile(e)
+
+        return data
 
     }
 
@@ -67,10 +72,9 @@ const UploadFileModel = ({
         <>
             <UploadFileView
                 title={title}
-                value={feedback}
-                hasChanged={false}
-                isWorking={false}
-                handleClickValue={() => { }}
+                feedback={feedback}
+                isPending={isPending}
+                isInit={isInit}
                 handleChangeUpload={
                     (e) => { mutate(e) }
                 }

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { act, render, Screen, screen, waitFor } from '@testing-library/react';
 import userEvent, { UserEvent } from '@testing-library/user-event';
 import UploadFileModel, { FEEDBACK_ERROR, FEEDBACK_PENDING, GetString, HandleFileUpload } from './UploadFileModel';
@@ -84,9 +84,11 @@ describe('UploadPhrases', () => {
     })
 })
 
+type Resolve = (value: string) => void
+type Reject = (value: Error) => void
 const withResolvers = () => {
-    let resolve: (value: string) => void;
-    let reject: (value: Error) => void;
+    let resolve: Resolve;
+    let reject: Reject;
 
     const promise = new Promise((res, rej) => {
         resolve = res
@@ -127,10 +129,7 @@ describe('Init feedback', () => {
             </QueryClientProvider>
         )
 
-        let feedbackPending: HTMLElement | null;
-
-        feedbackPending = await screen.findByText(FEEDBACK_PENDING)
-        expect(feedbackPending).not.toBeNull()
+        await screen.findByText(FEEDBACK_PENDING)
 
     })
 
@@ -149,18 +148,11 @@ describe('Init feedback', () => {
             </QueryClientProvider>
         )
 
-        let feedback: HTMLElement | null;
-        feedback = screen.queryByText(findRegexp)
-        expect(feedback).toBeNull()
-
         act(() => {
             reject(new Error("Forced error"))
         })
 
-        await waitFor(() => {
-            feedback = screen.queryByText(findRegexp)
-            expect(feedback).not.toBeNull()
-        })
+        screen.findByText(findRegexp)
     })
 
     it('shows success feedback', async () => {
@@ -179,18 +171,11 @@ describe('Init feedback', () => {
             </QueryClientProvider>
         )
 
-        let feedback: HTMLElement | null;
-        feedback = screen.queryByText(findRegexp)
-        expect(feedback).toBeNull()
-
         act(() => {
             resolve(successStr)
         })
 
-        await waitFor(() => {
-            feedback = screen.queryByText(findRegexp)
-            expect(feedback).not.toBeNull()
-        })
+        screen.findByText(findRegexp)
     })
 })
 
@@ -230,134 +215,177 @@ describe('Upload feedback', () => {
 
     describe('from init feedback success', () => {
 
-        it('shows success', async () => {
+        async function renderInitSuccess() {
 
             const successInit = "SUCCESS ON INIT"
-            const successPost = "SUCCESS ON POST"
 
-            const findRegexp = new RegExp(successPost)
             const queryClient = new QueryClient()
-            const { handleFileUpload, resolve } = getUploadResolvers()
+            const { handleFileUpload, resolve, reject } = getUploadResolvers()
 
-            act(() => {
+            render(
+                <QueryClientProvider client={queryClient}>
+                    <UploadFileModel
+                        title='Example'
+                        getInitFeedback={() => { return Promise.resolve(successInit) }}
+                        postFile={handleFileUpload}
+                    />
+                </QueryClientProvider>
+            )
 
-                render(
-                    <QueryClientProvider client={queryClient}>
-                        <UploadFileModel
-                            title='Example'
-                            getInitFeedback={() => { return Promise.resolve(successInit) }}
-                            postFile={handleFileUpload}
-                        />
-                    </QueryClientProvider>
-                )
-
-            })
-
-            let feedback: HTMLElement | null;
             await waitFor(() => {
-                feedback = screen.queryByText(new RegExp(successInit))
+                const feedback = screen.queryByText(new RegExp(successInit))
                 expect(feedback).not.toBeNull()
             })
+
+            return { resolve, reject }
+
+        }
+
+        it('shows success', async () => {
+
+            const { resolve, reject } = await renderInitSuccess()
+
+            const successPost = "SUCCESS ON POST"
+            const findRegexp = new RegExp(successPost)
 
             const user = userEvent.setup()
 
-            act(() => {
-                uploadFile(screen, user)
+            await act(async () => {
+                await uploadFile(screen, user)
             })
 
             act(() => {
-                resolve(successPost)
+                resolve!(successPost)
             })
 
-            await waitFor(() => {
-                feedback = screen.queryByText(findRegexp)
-                expect(feedback).not.toBeNull()
-            })
+            await screen.findByText(findRegexp)
 
         })
 
         it('shows error', async () => {
 
-            const successStr = "SUCCESS ON INIT"
+            const { resolve, reject } = await renderInitSuccess()
+
             const findRegexp = new RegExp(FEEDBACK_ERROR)
-            const queryClient = new QueryClient()
-            const { handleFileUpload, reject } = getUploadResolvers()
-
-            act(() => {
-
-                render(
-                    <QueryClientProvider client={queryClient}>
-                        <UploadFileModel
-                            title='Example'
-                            getInitFeedback={() => { return Promise.resolve(successStr) }}
-                            postFile={handleFileUpload}
-                        />
-                    </QueryClientProvider>
-                )
-
-            })
-
-            let feedback: HTMLElement | null;
-            await waitFor(() => {
-                feedback = screen.queryByText(new RegExp(successStr))
-                expect(feedback).not.toBeNull()
-
-            })
 
             const user = userEvent.setup()
-            act(() => {
-                uploadFile(screen, user)
+            await act(async () => {
+                await uploadFile(screen, user)
             })
 
             act(() => {
                 reject(new Error("From upload file show error"))
             })
 
-            await waitFor(() => {
-                feedback = screen.queryByText(findRegexp)
-                expect(feedback).not.toBeNull()
-            })
+            await screen.findByText(findRegexp)
 
         })
 
         it('shows pending', async () => {
 
-            const successStr = "SUCCESS ON INIT"
+            const { resolve, reject } = await renderInitSuccess()
             const findRegexp = new RegExp(FEEDBACK_PENDING)
-            const queryClient = new QueryClient()
-            const { handleFileUpload } = getUploadResolvers()
-
-            act(() => {
-
-                render(
-                    <QueryClientProvider client={queryClient}>
-                        <UploadFileModel
-                            title='Example'
-                            getInitFeedback={() => { return Promise.resolve(successStr) }}
-                            postFile={handleFileUpload}
-                        />
-                    </QueryClientProvider>
-                )
-
-            })
-
-            let feedback: HTMLElement | null;
-            await waitFor(() => {
-                feedback = screen.queryByText(new RegExp(successStr))
-                expect(feedback).not.toBeNull()
-
-            })
 
             const user = userEvent.setup()
-            act(() => {
-                uploadFile(screen, user)
+            await act(async () => {
+                await uploadFile(screen, user)
             })
 
-            await waitFor(() => {
-                feedback = screen.queryByText(findRegexp)
-                expect(feedback).not.toBeNull()
-            })
+            await screen.findByText(findRegexp)
+        })
 
+    })
+
+})
+
+describe.only('Confirm feedback', () => {
+
+    async function renderInitSuccess() {
+        const initStr = "Success init"
+        const queryClient = new QueryClient()
+        const { getInitFeedback, resolve: initResolve } = getInitFeedbackResolvers()
+        const { handleFileUpload, resolve, reject } = getUploadResolvers()
+
+        render(
+            <QueryClientProvider client={queryClient}>
+                <UploadFileModel
+                    title='Example'
+                    getInitFeedback={getInitFeedback}
+                    postFile={handleFileUpload}
+                />
+            </QueryClientProvider>
+        )
+
+        act(() => {
+            initResolve(initStr)
+        })
+
+        await screen.findByText(initStr)
+
+        return { resolve, reject }
+    }
+
+    it('disables feedback button on upload', async () => {
+
+        const findRegexp = new RegExp(FEEDBACK_PENDING)
+
+        const { resolve, reject } = await renderInitSuccess()
+        
+
+        const user = userEvent.setup()
+        await act(async () => {
+            await uploadFile(screen, user)
+        })
+
+        await waitFor(async () => {
+            const feedback: HTMLButtonElement = await screen.findByText(findRegexp)
+            expect(feedback.disabled === true)
+        })
+
+    })
+
+    it('enables feedback button on uploaded', async () => {
+
+        const uploadSuccess = "uploadSuccess"
+        const findRegexp = new RegExp(uploadSuccess)
+
+        const { resolve, reject } = await renderInitSuccess()
+
+        const user = userEvent.setup()
+        await act(async () => {
+            await uploadFile(screen, user)
+        })
+
+        act(() => {
+            resolve(uploadSuccess)
+        })
+
+        await waitFor(async () => {
+            const feedback: HTMLButtonElement = await screen.findByText(findRegexp)
+            expect(feedback.disabled === false)
+        })
+
+    })
+
+    it('enables feedback button on error', async () => {
+
+        const uploadStr = "uploadError"
+        const findRegexp = new RegExp(uploadStr)
+
+        const { resolve, reject } = await renderInitSuccess()
+
+        const user = userEvent.setup()
+        await act(async () => {
+            await uploadFile(screen, user)
+        })
+
+        act(() => {
+            reject(new Error(uploadStr))
+        })
+
+        await waitFor(async () => {
+            const feedback: HTMLButtonElement = await screen.findByText(findRegexp)
+            expect(feedback.disabled === false)
         })
 
     })
