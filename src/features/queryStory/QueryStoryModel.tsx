@@ -10,11 +10,13 @@ const queryClient = new QueryClient()
 
 type PostMarkStory = (story: string) => Promise<[undefined, string] | [Error]>
 type Props = {
-    postMarkStory: PostMarkStory
+    postMarkStory: PostMarkStory,
+    abortMarkStory: (reason?: any) => void
 }
 
 function QueryStoryModel({
     postMarkStory,
+    abortMarkStory
 }: Props) {
 
     const { data, mutateAsync, isError } = useMutation({
@@ -34,7 +36,7 @@ function QueryStoryModel({
             <QueryStoryView
                 handleSubmit={async (e) => { await mutateAsync(e) }}
                 isResponseError={isError}
-                handleFormActionReset={() => { }}
+                handleFormActionReset={abortMarkStory}
                 marked={marked}
             />
         </QueryClientProvider>

@@ -17,6 +17,7 @@ describe('QueryStory', () => {
             <QueryClientProvider client={queryClient}>
                 <QueryStoryModel
                     postMarkStory={(s) => Promise.resolve([undefined, returnStory])}
+                    abortMarkStory={()=>{}}
                 />
             </QueryClientProvider>
         )
@@ -28,6 +29,7 @@ describe('QueryStory', () => {
             <QueryClientProvider client={queryClient}>
                 <QueryStoryModel
                     postMarkStory={(s) => Promise.resolve([undefined, returnStory])}
+                    abortMarkStory={()=>{}}
                 />
             </QueryClientProvider>
         )
@@ -64,6 +66,7 @@ describe('QueryStory', () => {
             <QueryClientProvider client={queryClient}>
                 <QueryStoryModel
                     postMarkStory={(s) => Promise.resolve([undefined, returnStory])}
+                    abortMarkStory={()=>{}}
                 />
             </QueryClientProvider>
         )
@@ -95,6 +98,7 @@ describe('QueryStory', () => {
             <QueryClientProvider client={queryClient}>
                 <QueryStoryModel
                     postMarkStory={postMarkStory}
+                    abortMarkStory={()=>{}}
                 />
             </QueryClientProvider>
         )
@@ -129,6 +133,7 @@ describe('QueryStory', () => {
             <QueryClientProvider client={queryClient}>
                 <QueryStoryModel
                     postMarkStory={postMarkStory}
+                    abortMarkStory={()=>{}}
                 />
             </QueryClientProvider>
         )
