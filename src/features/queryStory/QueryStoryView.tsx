@@ -1,6 +1,5 @@
 import { useForm } from '@tanstack/react-form'
 import { z } from 'zod'
-import { useEffect, useState } from 'react'
 import StoryField from './components/StoryField'
 import FormButtons from '@/components/form/FormButtons'
 

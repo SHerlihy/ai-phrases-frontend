@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react'
 
 const queryClient = new QueryClient()
 
-type PostMarkStory = (story: string) => Promise<[undefined, string] | [Error]>
+export type PostMarkStory = (story: string) => Promise<[undefined, string] | [Error]>
 type Props = {
     postMarkStory: PostMarkStory,
     abortMarkStory: (reason?: any) => void
