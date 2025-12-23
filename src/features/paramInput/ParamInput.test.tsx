@@ -5,9 +5,8 @@ import ParamStore from './ParamStore';
 import ParamInput from './ParamInput';
 
 describe('ParamInput', () => {
-
+    const { getParam, setParam } = new ParamStore()
     it('renders the component', () => {
-        const { getParam, setParam } = new ParamStore()
         const key = "key"
 
         render(
@@ -17,7 +16,6 @@ describe('ParamInput', () => {
     })
 
     it('sets the param', async () => {
-        const { getParam, setParam } = new ParamStore()
         const title = "key"
         const param = "value"
 
