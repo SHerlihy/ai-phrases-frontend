@@ -1,6 +1,5 @@
 import { ChangeEvent } from "react";
-import { GetString, HandleFileUpload } from "./UploadPhrases";
-import { xml2json } from "xml-js";
+import { GetString, HandleFileUpload } from "./UploadFileModel";
 
 const options = {
     compact: true
