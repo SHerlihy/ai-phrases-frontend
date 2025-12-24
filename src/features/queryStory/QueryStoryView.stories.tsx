@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { fn } from '@storybook/test';
 import QueryStoryView from './QueryStoryView';
-import { seventyK } from '@/stories/StoryBox';
+import { seventyK } from './components/StoryBox';
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories#default-export
 const meta = {
@@ -9,7 +9,7 @@ const meta = {
     component: QueryStoryView,
     tags: ['autodocs'],
     args: {
-        postMarkStory: fn(),
+        handleSubmit: fn(),
         handleFormActionReset: fn()
     },
 } satisfies Meta<typeof QueryStoryView>;
@@ -21,20 +21,31 @@ type Story = StoryObj<typeof meta>;
 export const Empty: Story = {
     args: {
         defaultValues: { story: "" },
-        isResponseError: false
+        isResponseError: false,
+        marked: null
     }
 };
 
 export const WholeStory: Story = {
     args: {
         defaultValues: { story: seventyK },
-        isResponseError: false
+        isResponseError: false,
+        marked: null
     }
 };
 
 export const Error: Story = {
     args: {
         defaultValues: { story: seventyK },
-        isResponseError: true
+        isResponseError: true,
+        marked: null
+    }
+};
+
+export const Marked: Story = {
+    args: {
+        defaultValues: { story: seventyK },
+        isResponseError: false,
+        marked: "Marked story"
     }
 };
