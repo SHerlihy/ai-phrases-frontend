@@ -1,15 +1,14 @@
-import {
-    QueryClient,
-    QueryClientProvider,
-    useMutation,
-} from '@tanstack/react-query'
-import QueryStoryView, { HandleSubmit } from './QueryStoryView'
+import { useMutation } from '@tanstack/react-query'
+import QueryStoryView from './QueryStoryView'
 import { useEffect, useState } from 'react'
+import { Phase } from '@/components/controlButton/ControlButton'
 
-const queryClient = new QueryClient()
+export const FEEDBACK_READY = "submit"
+export const FEEDBACK_ERROR = "retry?"
+export const FEEDBACK_PENDING = "cancel?"
 
 type Props = {
-    postMarkStory: HandleSubmit,
+    postMarkStory: (story: string) => Promise<string>,
     abortMarkStory: (reason?: any) => void
 }
 
@@ -17,28 +16,78 @@ function QueryStoryModel({
     postMarkStory,
     abortMarkStory
 }: Props) {
+    const [feedback, setFeedback] = useState(FEEDBACK_READY)
+    const [phase, setPhase] = useState<Phase>("ready")
 
-    const { data, mutateAsync, isError } = useMutation({
+    const { data, mutateAsync, isError, isPending, isSuccess } = useMutation({
         mutationFn: postMarkStory
     })
 
     const [marked, setMarked] = useState<string | null>(null)
 
     useEffect(() => {
-        if (data && data[1]) {
-            setMarked(data[1])
+
+        setMarked(null)
+
+        if (isSuccess && data) {
+            setMarked(data)
         }
-    }, [data])
+
+    }, [isPending])
+
+    useEffect(() => {
+
+        if (isSuccess) {
+            setPhase("ready")
+            setFeedback(FEEDBACK_READY)
+            return
+        }
+
+        if (isError) {
+            setPhase("error")
+            setFeedback(FEEDBACK_ERROR)
+            return
+        }
+
+        if (isPending) {
+            setPhase("pending")
+            setFeedback(FEEDBACK_PENDING)
+            return
+        }
+
+    }, [isPending, isError, data])
+
+    const handleClick = (handleQuery: () => void) => {
+        switch (phase) {
+            case "ready":
+                handleQuery()
+                break;
+            case "pending":
+                abortMarkStory()
+                break;
+            case "error":
+                handleQuery()
+                break;
+            case 'confirm':
+                setPhase("ready")
+                break;
+            case 'idle':
+                break;
+
+            default:
+                setPhase("ready")
+                break;
+        }
+    }
 
     return (
-        <QueryClientProvider client={queryClient}>
-            <QueryStoryView
-                handleSubmit={mutateAsync}
-                isResponseError={isError}
-                handleFormActionReset={abortMarkStory}
-                marked={marked}
-            />
-        </QueryClientProvider>
+        <QueryStoryView
+            marked={marked}
+            feedback={feedback}
+            phase={phase}
+            handleQuery={async (story) => { await mutateAsync(story) }}
+            handleClick={handleClick}
+        />
     )
 }
 

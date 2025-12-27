@@ -10,8 +10,7 @@ import { getInitFeedbackResolvers, getUploadResolvers, uploadFile } from './Uplo
 const successInit = "SUCCESS ON INIT"
 const abortMessage = "ABORT CALLED"
 
-
-describe('Upload enabled', () => {
+describe('Uploading', () => {
 
     const setupPending = () => {
         const queryClient = new QueryClient()

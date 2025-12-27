@@ -1,7 +1,7 @@
 type QueryResponse = Response
 
 interface IQueryStoryControl {
-    postQuery: (story: string) => Promise<[undefined, QueryResponse] | [Error]>
+    postQuery: (story: string) => Promise<QueryResponse>
     demarshall: (res: QueryResponse) => Promise<string>
     abortQuery: (reason?: any) => void
 }
@@ -17,31 +17,82 @@ class QueryStoryControl implements IQueryStoryControl {
         this.getParam = getParam
     }
 
-    async postQuery(story: string): Promise<[undefined, QueryResponse] | [Error]> {
+    postQuery = async (story: string): Promise<QueryResponse> => {
+
+        this.controller = new AbortController()
+
         const param = this.getParam()
         const params = new URLSearchParams();
         params.append("key", param)
 
-        const response = await fetch(`${this.postUrl}?${params}`, {
+        const response = await this.markStoryRequest(story, params)
+
+        if (response.status !== 200) {
+            throw Error(`Query story status: ${response.status}`)
+        }
+
+        return response
+    }
+
+    demarshall = async (queryRes: QueryResponse) => {
+        return await queryRes.text()
+    }
+
+    abortQuery = (reason?: any) => {
+        this.controller.abort(reason)
+    }
+
+    markStoryRequest = async (story: string, params: URLSearchParams) => {
+        if (import.meta.env.DEV) {
+            return await this.markStoryRequestDev()
+        }
+
+        return await this.markStoryRequestProd(story, params)
+    }
+
+
+    markStoryRequestProd = async (story: string, params: URLSearchParams) => {
+
+        return await fetch(`${this.postUrl}?${params}`, {
             method: "POST",
             mode: "cors",
             signal: this.controller.signal,
             body: story
         })
+    }
 
-        if (!response.ok) {
-            return [new Error(`Query story status: ${response.status}`)]
+    markStoryRequestDev = async (): Promise<Response> => {
+
+        await Promise.race([
+            new Promise(resolve => setTimeout(resolve, 2000)),
+            new Promise((_, reject) =>
+                this.controller.signal.onabort = () => {
+                    reject(new Error("Upload aborted"))
+                }
+            ),
+        ])
+
+        const failOpts = {
+            status: 400,
+            statusText: "Error"
         }
 
-        return [undefined, response]
-    }
+        const successOpts = {
+            status: 200,
+            satusText: "Upload complete"
+        }
 
-    async demarshall(queryRes: QueryResponse) {
-        return await queryRes.text()
-    }
+        const failResponse = new Response("Query failed", failOpts)
 
-    abortQuery(reason?: any) {
-        this.controller.abort(reason)
+        const successResponse = new Response("marked story", successOpts)
+
+        const rnd = Math.random()
+
+        if (rnd > 0.5) {
+            return failResponse
+        }
+
+        return successResponse
     }
 }
 

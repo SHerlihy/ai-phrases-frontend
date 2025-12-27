@@ -2,52 +2,40 @@ import { useMutation } from '@tanstack/react-query'
 import { ChangeEvent, useEffect, useState } from 'react'
 import UploadFileView from './UploadFileView'
 import { catchError } from '@/lib/async'
-
-export type GetString = () => Promise<string>
-export type HandleFileUpload = (e: ChangeEvent<HTMLInputElement>) => Promise<string>
-export type Phase = "idle" | "uploading" | "ready" | "confirm" | "error"
-
-export const FEEDBACK_PENDING = "Cancel upload..."
-export const FEEDBACK_ERROR = "Error"
-export type Feedback =
-    | typeof FEEDBACK_PENDING
-    | typeof FEEDBACK_ERROR
-    | string
+import { Phase } from '@/components/controlButton/ControlButton'
 
 const UploadFileModel = ({
     title,
     getInitFeedback,
+    loadFile,
     uploadFile,
     abortUpload
 }: {
     title: string,
-    getInitFeedback: GetString,
-    uploadFile: HandleFileUpload,
+    getInitFeedback: () => Promise<string>,
+    loadFile: (e: ChangeEvent<HTMLInputElement>) => void,
+    uploadFile: () => Promise<string>,
     abortUpload: (reason?: any) => void
 }) => {
-    const [feedback, setFeedback] = useState<Feedback>(FEEDBACK_PENDING)
     const [isInit, setIsInit] = useState(true)
     const [phase, setPhase] = useState<Phase>("idle")
+    const [feedback, setFeedback] = useState("searching...")
 
-    async function handleInitFeedback() {
-        const [error, feedback] = await getInitFeedback()
+    async function handleMutation() {
 
-        if (error) {
-            throw error
+        if (isInit) {
+            setIsInit(false)
+
+            const [error, feedback] = await catchError(getInitFeedback())
+
+            if (error) {
+                throw error
+            }
+
+            return feedback
         }
 
-        return feedback
-    }
-
-    async function handleMutation(e?: ChangeEvent<HTMLInputElement>) {
-
-        if (!e) {
-            return await handleInitFeedback()
-        }
-
-        setIsInit(false)
-
-        const [error, data] = await catchError(uploadFile(e))
+        const [error, data] = await catchError(uploadFile())
 
         if (error) {
             throw error
@@ -78,28 +66,49 @@ const UploadFileModel = ({
 
         if (isError) {
             setPhase("error")
-            setFeedback(FEEDBACK_ERROR)
+            setFeedback("retry?")
             return
         }
 
         if (isPending && !isInit) {
             setPhase("uploading")
-            setFeedback(FEEDBACK_PENDING)
+            setFeedback("cancel?")
             return
         }
 
     }, [isPending, isError, data])
 
+    const handleClick = () => {
+        switch (phase) {
+            case "ready":
+                mutate()
+                break;
+            case "uploading":
+                abortUpload()
+                break;
+            case "error":
+                mutate()
+                break;
+            case 'confirm':
+                setPhase("ready")
+                break;
+            case 'idle':
+                break;
+
+            default:
+                setPhase("ready")
+                break;
+        }
+    }
+
     return (
         <>
             <UploadFileView
                 title={title}
+                handleChange={loadFile}
                 feedback={feedback}
-                isInit={isInit}
-                handleChangeUpload={mutate}
                 phase={phase}
-                setPhase={setPhase}
-                abortUpload={abortUpload}
+                onClick={handleClick}
             />
         </>
     )

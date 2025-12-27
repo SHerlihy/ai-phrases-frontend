@@ -1,24 +1,21 @@
 import UploadInput, { Props as PropsUpload } from '@/components/UploadInput'
+import ControlButton, { Props as PropsButton } from '@/components/controlButton/ControlButton'
 import { Card, CardTitle } from '@/components/ui/card'
-import UploadControlButton, { Props as PropsButton } from './components/UploadControlButton'
 
 export type Props =
     {
         title: string,
-        isInit: boolean,
-        handleChangeUpload: PropsUpload['handleChange']
     }
     & PropsButton
-    & Omit<PropsUpload, 'handleChange' | 'disabled'>
+    & Omit<PropsUpload, 'disabled'>
 
 const UploadFileView = (
     {
         title,
+        handleChange,
         feedback,
-        handleChangeUpload,
         phase,
-        setPhase,
-        abortUpload
+        onClick,
     }: Props
 ) => {
 
@@ -28,14 +25,13 @@ const UploadFileView = (
                 <p style={{ 'lineHeight': 2 }}>{title}:</p>
             </CardTitle>
             <UploadInput
-                handleChange={handleChangeUpload}
+                handleChange={handleChange}
                 disabled={phase === "uploading"}
             />
-            <UploadControlButton
+            <ControlButton
                 feedback={feedback}
                 phase={phase}
-                setPhase={setPhase}
-                abortUpload={abortUpload}
+                onClick={onClick}
             />
         </Card>
     )

@@ -1,33 +1,32 @@
 import { useForm } from '@tanstack/react-form'
 import { z } from 'zod'
 import StoryField from './components/StoryField'
-import FormButtons from '@/components/form/FormButtons'
+import ControlButton, { Props as PropsControlButton } from '@/components/controlButton/ControlButton'
 
 const storySchema = z.object({
     story: z.string()
 })
 
-type FormDefaults = z.infer<typeof storySchema>
-export const formDefaults: FormDefaults = {
+type FormSchema = z.infer<typeof storySchema>
+export const formDefaults: FormSchema = {
     story: ""
 }
 
-export type HandleSubmit = (e: string) => Promise<string> 
-
 type Props = {
-    defaultValues?: FormDefaults,
-    handleSubmit: HandleSubmit,
-    handleFormActionReset: () => void,
-    isResponseError: boolean,
-    marked: string|null,
+    defaultValues?: FormSchema,
+    marked: string | null,
+    handleQuery: (story: string) => Promise<void>,
+    handleClick: (submit: () => Promise<void>) => void,
 }
+    & PropsControlButton
 
 function QueryStoryView({
     defaultValues = formDefaults,
-    handleSubmit,
-    handleFormActionReset,
-    isResponseError,
-    marked
+    marked,
+    feedback,
+    phase,
+    handleQuery,
+    handleClick
 }: Props) {
 
     const form = useForm({
@@ -36,28 +35,18 @@ function QueryStoryView({
             onChange: storySchema,
             onMount: storySchema,
         },
-        onSubmit: async ({ value }) => { await handleSubmit(value.story) }
+        onSubmit: async ({ value }) => { await handleQuery(value.story) }
     })
-
-    const handleFormReset = () => {
-        form.reset()
-        handleFormActionReset()
-    }
 
     return (
         <form
             onSubmit={(e) => {
                 e.preventDefault()
                 e.stopPropagation()
-                form.handleSubmit()
             }}
             onChange={(e) => {
                 e.preventDefault()
                 e.stopPropagation()
-
-                if (isResponseError) {
-                    handleFormActionReset()
-                }
             }}
         >
             <form.Field
@@ -69,14 +58,10 @@ function QueryStoryView({
                     />
                 )}
             />
-            <form.Subscribe
-                selector={(state) => [state.canSubmit, state.isSubmitting]}
-                children={([canSubmit, isSubmitting]) =>
-                    <FormButtons
-                        canSubmit={canSubmit}
-                        isSubmitting={isSubmitting}
-                        handleReset={handleFormReset}
-                    />}
+            <ControlButton
+                feedback={feedback}
+                phase={phase}
+                onClick={() => { handleClick(form.handleSubmit) }}
             />
         </form >
     )
