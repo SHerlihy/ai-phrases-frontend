@@ -19,7 +19,7 @@ const { postQuery, demarshall, abortQuery } = new QueryStoryControl(POST_QUERY_U
 
 const MarkStory = () => {
 
-    const handlePostMarkStory = async (story) => {
+    const handlePostMarkStory = async (story: string) => {
         const [error, response] = await catchError(postQuery(story))
 
         if (error) {
@@ -38,6 +38,10 @@ const MarkStory = () => {
                 loadFile={loadFile}
                 uploadFile={uploadFile}
                 abortUpload={abortFileUpload}
+            />
+            <QueryStoryModel
+                postMarkStory={handlePostMarkStory}
+                abortMarkStory={abortQuery}
             />
         </>
     )

@@ -28,10 +28,14 @@ function QueryStoryModel({
     const [marked, setMarked] = useState<string | null>(null)
 
     useEffect(() => {
-        if (data) {
+
+        setMarked(null)
+
+        if (isSuccess && data) {
             setMarked(data)
         }
-    }, [isSuccess])
+
+    }, [isPending])
 
     useEffect(() => {
 

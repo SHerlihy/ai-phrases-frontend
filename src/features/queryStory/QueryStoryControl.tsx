@@ -18,6 +18,9 @@ class QueryStoryControl implements IQueryStoryControl {
     }
 
     postQuery = async (story: string): Promise<QueryResponse> => {
+
+        this.controller = new AbortController()
+
         const param = this.getParam()
         const params = new URLSearchParams();
         params.append("key", param)
@@ -60,7 +63,14 @@ class QueryStoryControl implements IQueryStoryControl {
 
     markStoryRequestDev = async (): Promise<Response> => {
 
-        await new Promise(r => setTimeout(r, 2000));
+        await Promise.race([
+            new Promise(resolve => setTimeout(resolve, 2000)),
+            new Promise((_, reject) =>
+                this.controller.signal.onabort = () => {
+                    reject(new Error("Upload aborted"))
+                }
+            ),
+        ])
 
         const failOpts = {
             status: 400,
