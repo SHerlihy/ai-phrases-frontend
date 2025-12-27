@@ -50,6 +50,9 @@ class UploadFileControls implements IUploadFileControls {
     }
 
     uploadFile = async () => {
+
+        this.controller = new AbortController()
+
         if (this.file === null) {
             throw new Error(`No file to upload`)
         }
@@ -137,8 +140,14 @@ class UploadFileControls implements IUploadFileControls {
 
     uploadFileRequestDev = async () => {
 
-        await new Promise(r => setTimeout(r, 2000));
-
+        await Promise.race([
+            new Promise(resolve => setTimeout(resolve, 2000)),
+            new Promise((_, reject) =>
+                this.controller.signal.onabort = () => {
+                    reject(new Error("Upload aborted"))
+                }
+            ),
+        ])
 
         const failOpts = {
             status: 400,
@@ -153,10 +162,6 @@ class UploadFileControls implements IUploadFileControls {
         const failResponse = new Response("", failOpts)
 
         const successResponse = new Response("Uploaded file name", successOpts)
-
-        if (this.controller.signal.aborted) {
-            return failResponse
-        }
 
         const rnd = Math.random()
 

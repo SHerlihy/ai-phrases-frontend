@@ -19,7 +19,7 @@ const { postQuery, demarshall, abortQuery } = new QueryStoryControl(POST_QUERY_U
 
 const MarkStory = () => {
 
-    const handlePostMarkStory: HandleSubmit = async (story) => {
+    const handlePostMarkStory = async (story) => {
         const [error, response] = await catchError(postQuery(story))
 
         if (error) {

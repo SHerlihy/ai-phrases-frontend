@@ -12,24 +12,21 @@ export const formDefaults: FormSchema = {
     story: ""
 }
 
-export type HandleSubmit = (e: string) => Promise<string>
-
 type Props = {
     defaultValues?: FormSchema,
     marked: string | null,
-    handleQuery: HandleSubmit,
-    handleAbort: (reason?: any) => void,
+    handleQuery: (story: string) => Promise<void>,
+    handleClick: (submit: () => Promise<void>) => void,
 }
-    & Omit<PropsControlButton, "onSubmit" | "onAbort">
+    & PropsControlButton
 
 function QueryStoryView({
     defaultValues = formDefaults,
     marked,
-    phase,
-    setPhase,
     feedback,
+    phase,
     handleQuery,
-    handleAbort
+    handleClick
 }: Props) {
 
     const form = useForm({
@@ -62,11 +59,9 @@ function QueryStoryView({
                 )}
             />
             <ControlButton
-                phase={phase}
-                setPhase={setPhase}
                 feedback={feedback}
-                onSubmit={form.handleSubmit}
-                onAbort={handleAbort}
+                phase={phase}
+                onClick={() => { handleClick(form.handleSubmit) }}
             />
         </form >
     )

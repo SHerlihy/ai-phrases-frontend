@@ -3,14 +3,14 @@ import {
     QueryClientProvider,
     useMutation,
 } from '@tanstack/react-query'
-import QueryStoryView, { HandleSubmit } from './QueryStoryView'
+import QueryStoryView from './QueryStoryView'
 import { useEffect, useState } from 'react'
 import { Phase } from '@/components/controlButton/ControlButton'
 
 const queryClient = new QueryClient()
 
 type Props = {
-    postMarkStory: HandleSubmit,
+    postMarkStory: (story: string) => Promise<string>,
     abortMarkStory: (reason?: any) => void
 }
 
@@ -55,15 +55,37 @@ function QueryStoryModel({
 
     }, [isPending, isError, data])
 
+    const handleClick = (handleQuery: () => void) => {
+        switch (phase) {
+            case "ready":
+                handleQuery()
+                break;
+            case "uploading":
+                abortMarkStory()
+                break;
+            case "error":
+                handleQuery()
+                break;
+            case 'confirm':
+                setPhase("ready")
+                break;
+            case 'idle':
+                break;
+
+            default:
+                setPhase("ready")
+                break;
+        }
+    }
+
     return (
         <QueryClientProvider client={queryClient}>
             <QueryStoryView
                 marked={marked}
-                handleQuery={mutateAsync}
-                handleAbort={abortMarkStory}
                 feedback={feedback}
                 phase={phase}
-                setPhase={setPhase}
+                handleQuery={async (story) => { await mutateAsync(story) }}
+                handleClick={handleClick}
             />
         </QueryClientProvider>
     )
