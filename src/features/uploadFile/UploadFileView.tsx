@@ -1,6 +1,6 @@
-import ConfirmFeedbackButton, { Props as PropsConfirmFeedback } from '@/components/ConfirmFeedbackButton'
 import UploadInput, { Props as PropsUpload } from '@/components/UploadInput'
 import { Card, CardTitle } from '@/components/ui/card'
+import UploadControlButton, { Props as PropsButton } from './components/UploadControlButton'
 
 export type Props =
     {
@@ -8,16 +8,17 @@ export type Props =
         isInit: boolean,
         handleChangeUpload: PropsUpload['handleChange']
     }
-    & PropsConfirmFeedback
+    & PropsButton
     & Omit<PropsUpload, 'handleChange' | 'disabled'>
 
 const UploadFileView = (
     {
         title,
         feedback,
-        isPending,
-        isInit,
-        handleChangeUpload
+        handleChangeUpload,
+        phase,
+        setPhase,
+        abortUpload
     }: Props
 ) => {
 
@@ -28,11 +29,13 @@ const UploadFileView = (
             </CardTitle>
             <UploadInput
                 handleChange={handleChangeUpload}
-                disabled={!isInit ? isPending : false}
+                disabled={phase === "uploading"}
             />
-            <ConfirmFeedbackButton
+            <UploadControlButton
                 feedback={feedback}
-                isPending={isPending}
+                phase={phase}
+                setPhase={setPhase}
+                abortUpload={abortUpload}
             />
         </Card>
     )

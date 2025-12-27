@@ -12,9 +12,11 @@ export const formDefaults: FormDefaults = {
     story: ""
 }
 
+export type HandleSubmit = (e: string) => Promise<string> 
+
 type Props = {
     defaultValues?: FormDefaults,
-    handleSubmit: (e: string) => Promise<void>,
+    handleSubmit: HandleSubmit,
     handleFormActionReset: () => void,
     isResponseError: boolean,
     marked: string|null,

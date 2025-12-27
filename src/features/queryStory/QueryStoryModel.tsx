@@ -3,14 +3,13 @@ import {
     QueryClientProvider,
     useMutation,
 } from '@tanstack/react-query'
-import QueryStoryView from './QueryStoryView'
+import QueryStoryView, { HandleSubmit } from './QueryStoryView'
 import { useEffect, useState } from 'react'
 
 const queryClient = new QueryClient()
 
-export type PostMarkStory = (story: string) => Promise<[undefined, string] | [Error]>
 type Props = {
-    postMarkStory: PostMarkStory,
+    postMarkStory: HandleSubmit,
     abortMarkStory: (reason?: any) => void
 }
 
@@ -34,7 +33,7 @@ function QueryStoryModel({
     return (
         <QueryClientProvider client={queryClient}>
             <QueryStoryView
-                handleSubmit={async (e) => { await mutateAsync(e) }}
+                handleSubmit={mutateAsync}
                 isResponseError={isError}
                 handleFormActionReset={abortMarkStory}
                 marked={marked}

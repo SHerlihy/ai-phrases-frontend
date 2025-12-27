@@ -1,6 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import BerryWeightViewer from "./features/berryWeightViewer"
-import ExamplePage from "./features/examplePage"
+import MarkStory from "./pages/MarkStory"
 
 const queryClient = new QueryClient()
 
@@ -8,8 +7,7 @@ function App() {
     return (
         <>
             <QueryClientProvider client={queryClient}>
-                <BerryWeightViewer />
-                <ExamplePage />
+                <MarkStory />
             </QueryClientProvider>
         </>
     )

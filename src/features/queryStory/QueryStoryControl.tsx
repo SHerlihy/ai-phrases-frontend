@@ -1,22 +1,23 @@
-import { PostMarkStory } from './QueryStoryModel'
-import { catchError } from '@/lib/async'
+type QueryResponse = Response
 
 interface IQueryStoryControl {
-    postQuery: PostMarkStory
+    postQuery: (story: string) => Promise<[undefined, QueryResponse] | [Error]>
+    demarshall: (res: QueryResponse) => Promise<string>
     abortQuery: (reason?: any) => void
 }
 
 class QueryStoryControl implements IQueryStoryControl {
-    postUrl = ""
     controller = new AbortController()
 
+    postUrl: string;
     getParam: () => string;
 
-    constructor(getParam: () => string) {
+    constructor(postUrl: string, getParam: () => string) {
+        this.postUrl = postUrl
         this.getParam = getParam
     }
 
-    async postQuery(story: string): Promise<[undefined, string] | [Error]> {
+    async postQuery(story: string): Promise<[undefined, QueryResponse] | [Error]> {
         const param = this.getParam()
         const params = new URLSearchParams();
         params.append("key", param)
@@ -32,13 +33,11 @@ class QueryStoryControl implements IQueryStoryControl {
             return [new Error(`Query story status: ${response.status}`)]
         }
 
-        const [error, marked] = await catchError(response.text())
+        return [undefined, response]
+    }
 
-        if (error) {
-            return [error]
-        }
-
-        return [undefined, marked]
+    async demarshall(queryRes: QueryResponse) {
+        return await queryRes.text()
     }
 
     abortQuery(reason?: any) {

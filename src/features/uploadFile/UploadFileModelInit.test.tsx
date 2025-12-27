@@ -9,88 +9,115 @@ describe('Init feedback', () => {
 
     const successPostFile: HandleFileUpload = async () => { return "from post" }
 
-    it('shows pending feedback', async () => {
-
+    const setupPending = () => {
         const queryClient = new QueryClient()
-        const { getInitFeedback } = getInitFeedbackResolvers()
+        const { getInitFeedback, resolve, reject } = getInitFeedbackResolvers()
 
         render(
             <QueryClientProvider client={queryClient}>
                 <UploadFileModel
                     title='Example'
                     getInitFeedback={getInitFeedback}
-                    postFile={successPostFile}
+                    uploadFile={successPostFile}
+                    abortUpload={() => { }}
                 />
             </QueryClientProvider>
         )
 
-        await screen.findByText(FEEDBACK_PENDING)
+        return { getInitFeedback, resolve, reject }
+    }
 
-    })
+    describe('from init pending', () => {
 
-    it('upload enabled when init pending', async () => {
+        const setup = () => {
+            return setupPending()
+        }
 
-        const queryClient = new QueryClient()
-        const { getInitFeedback } = getInitFeedbackResolvers()
+        it('shows pending feedback', async () => {
 
-        render(
-            <QueryClientProvider client={queryClient}>
-                <UploadFileModel
-                    title='Example'
-                    getInitFeedback={getInitFeedback}
-                    postFile={successPostFile}
-                />
-            </QueryClientProvider>
-        )
+            const { getInitFeedback, resolve, reject } = setup()
 
-        const fileInput = await screen.findByLabelText(LABEL_TEXT) as HTMLInputElement
-        expect(fileInput.disabled === false)
+            await screen.findByText(FEEDBACK_PENDING)
 
-    })
-
-    it('shows error feedback', async () => {
-        const findRegexp = new RegExp(FEEDBACK_ERROR)
-        const queryClient = new QueryClient()
-        const { getInitFeedback, reject } = getInitFeedbackResolvers()
-
-        render(
-            <QueryClientProvider client={queryClient}>
-                <UploadFileModel
-                    title='Example'
-                    getInitFeedback={getInitFeedback}
-                    postFile={successPostFile}
-                />
-            </QueryClientProvider>
-        )
-
-        act(() => {
-            reject(new Error("Forced error"))
         })
 
-        screen.findByText(findRegexp)
+        it('upload enabled', async () => {
+
+            const { getInitFeedback, resolve, reject } = setup()
+
+            const fileInput = await screen.findByLabelText(LABEL_TEXT) as HTMLInputElement
+            expect(fileInput.disabled === false)
+
+        })
+
+
     })
 
-    it('shows success feedback', async () => {
+    describe("from error", () => {
+        const setup = () => {
+            const { getInitFeedback, resolve, reject } = setupPending()
+
+            act(() => {
+                reject(new Error("Forced error"))
+            })
+
+            return { getInitFeedback, resolve, reject }
+        }
+
+        it('upload enabled', async () => {
+
+            const { getInitFeedback, resolve, reject } = setup()
+
+            const fileInput = await screen.findByLabelText(LABEL_TEXT) as HTMLInputElement
+            expect(fileInput.disabled === false)
+
+        })
+
+        it('shows error feedback', async () => {
+            const findRegexp = new RegExp(FEEDBACK_ERROR)
+
+            const { getInitFeedback, resolve, reject } = setup()
+
+            act(() => {
+                reject(new Error("Forced error"))
+            })
+
+            screen.findByText(findRegexp)
+        })
+    })
+
+    describe("from success", () => {
+
         const successStr = "Success in test"
-        const findRegexp = new RegExp(successStr)
-        const queryClient = new QueryClient()
-        const { getInitFeedback, resolve } = getInitFeedbackResolvers()
 
-        render(
-            <QueryClientProvider client={queryClient}>
-                <UploadFileModel
-                    title='Example'
-                    getInitFeedback={getInitFeedback}
-                    postFile={successPostFile}
-                />
-            </QueryClientProvider>
-        )
+        const setup = () => {
+            const { getInitFeedback, resolve, reject } = setupPending()
 
-        act(() => {
-            resolve(successStr)
+            act(() => {
+                resolve(successStr)
+            })
+
+            return { getInitFeedback, resolve, reject }
+        }
+
+        it('shows success feedback', async () => {
+            const findRegexp = new RegExp(successStr)
+
+            const { getInitFeedback, resolve, reject } = setup()
+
+
+            screen.findByText(findRegexp)
         })
 
-        screen.findByText(findRegexp)
-    })
-})
+        it('upload enabled', async () => {
 
+            const { getInitFeedback, resolve, reject } = setup()
+
+            const fileInput = await screen.findByLabelText(LABEL_TEXT) as HTMLInputElement
+            expect(fileInput.disabled === false)
+
+        })
+
+    })
+
+})
