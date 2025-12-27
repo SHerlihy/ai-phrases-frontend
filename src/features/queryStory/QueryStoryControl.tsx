@@ -86,12 +86,12 @@ class QueryStoryControl implements IQueryStoryControl {
 
         const successResponse = new Response("marked story", successOpts)
 
-        // const rnd = Math.random()
-        //
-        // if (rnd > 0.5) {
-        //     return failResponse
-        // }
-        //
+        const rnd = Math.random()
+
+        if (rnd > 0.5) {
+            return failResponse
+        }
+
         return successResponse
     }
 }

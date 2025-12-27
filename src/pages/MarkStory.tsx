@@ -2,14 +2,15 @@ import ParamInput from '@/features/paramInput/ParamInput'
 import ParamStore from '@/features/paramInput/ParamStore'
 import QueryStoryControl from '@/features/queryStory/QueryStoryControl'
 import QueryStoryModel from '@/features/queryStory/QueryStoryModel'
-import { HandleSubmit } from '@/features/queryStory/QueryStoryView'
 import UploadFileControls from '@/features/uploadFile/UploadFileControls'
 import UploadFileModel from '@/features/uploadFile/UploadFileModel'
 import { catchError } from '@/lib/async'
 
 const BUCKET_URL = ""
 const POST_QUERY_URL = ""
+
 const { setParam, getParam } = new ParamStore()
+
 const getKey = () => {
     return getParam("key")
 }
@@ -46,22 +47,6 @@ const MarkStory = () => {
         </>
     )
 
-    return (
-        <>
-            <ParamInput title={"key"} setParam={setParam} />
-            <UploadFileModel
-                title="Phrases"
-                getInitFeedback={getFilename}
-                loadFile={loadFile}
-                uploadFile={uploadFile}
-                abortUpload={abortFileUpload}
-            />
-            <QueryStoryModel
-                postMarkStory={handlePostMarkStory}
-                abortMarkStory={abortQuery}
-            />
-        </>
-    )
 }
 
 export default MarkStory

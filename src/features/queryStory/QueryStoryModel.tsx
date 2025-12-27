@@ -1,13 +1,7 @@
-import {
-    QueryClient,
-    QueryClientProvider,
-    useMutation,
-} from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import QueryStoryView from './QueryStoryView'
 import { useEffect, useState } from 'react'
 import { Phase } from '@/components/controlButton/ControlButton'
-
-const queryClient = new QueryClient()
 
 type Props = {
     postMarkStory: (story: string) => Promise<string>,
@@ -83,15 +77,13 @@ function QueryStoryModel({
     }
 
     return (
-        <QueryClientProvider client={queryClient}>
-            <QueryStoryView
-                marked={marked}
-                feedback={feedback}
-                phase={phase}
-                handleQuery={async (story) => { await mutateAsync(story) }}
-                handleClick={handleClick}
-            />
-        </QueryClientProvider>
+        <QueryStoryView
+            marked={marked}
+            feedback={feedback}
+            phase={phase}
+            handleQuery={async (story) => { await mutateAsync(story) }}
+            handleClick={handleClick}
+        />
     )
 }
 
