@@ -1,60 +1,98 @@
 import { ChangeEvent } from "react";
-import { GetString, HandleFileUpload } from "./UploadFileModel";
+import { GetString } from "./UploadFileModel";
+import { xml2json } from "xml-js";
+
+type Contents = {
+    Key: string,
+    LastModified: Date,
+    ETag: string,
+    Size: number,
+    StorageClass: string
+}
+
+type ListBucketResponse = {
+    ListBucketResult: {
+        Name: string,
+        Prefix: string,
+        KeyCount: number,
+        MaxKeys: number,
+        IsTruncated: boolean,
+        Contents: Contents[]
+    }
+}
 
 const options = {
     compact: true
 };
 
 interface IUploadFileControls {
-    postFile: HandleFileUpload,
+    uploadFile: (e: ChangeEvent<HTMLInputElement>) => Promise<string>
+    abortFileUpload: (reason?: any) => void
     getFilename: GetString
 }
 
 class UploadFileControls implements IUploadFileControls {
-    baseUrl;
+    controller = new AbortController()
+
+    baseUrl: string;
 
     constructor(baseUrl: string) { this.baseUrl = baseUrl }
 
-    async postFile(e: ChangeEvent<HTMLInputElement>) {
+    async uploadFile(e: ChangeEvent<HTMLInputElement>) {
         const files = e.target.files
         if (files === null) {
-            return ""
+            new Error(`No file to upload`)
         }
 
         const formData = new FormData();
-        formData.append('file', files[0]);
+        const file = files![0]
+
+        formData.append('file', file);
 
         const response = await fetch(this.baseUrl,
             {
-                method: "POST",
+                method: "PUT",
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
+                mode: "cors",
+                signal: this.controller.signal,
                 body: formData
             }
         )
-        //xml to json
-        if (response.status === 204) { return files[0].name }
 
-        return "Failure"
+        if (response.status !== 200) {
+            throw new Error(`Upload file status: ${response.status}`)
+        }
+
+        return file.name
+    }
+
+    abortFileUpload(reason?: any) {
+        this.controller.abort(reason)
     }
 
     async getFilename() {
-        const response = await fetch(this.baseUrl)
-        //xml to json
-        if (!response || !response.body) {
-            return ""
+        const response = await fetch(this.baseUrl, {
+            method: "GET",
+            mode: "cors",
+            signal: this.controller.signal
+        })
+
+        if (response.status !== 200) {
+            throw new Error("Unable to list bucket objects")
         }
 
-        const listObj = JSON.parse(xml2json(response.body, options))
+        const xmlStr = await response.text()
+
+        const listObj = JSON.parse(xml2json(xmlStr, options)) as ListBucketResponse
         let contents = listObj.ListBucketResult.Contents;
         if (!Array.isArray(contents)) {
             contents = [contents]
         }
 
-        return contents[0].Key._text
+        return contents[0].Key
     }
-
 }
 
 export default UploadFileControls

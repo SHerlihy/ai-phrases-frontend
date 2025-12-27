@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import UploadFileModel, {GetString, HandleFileUpload } from './UploadFileModel';
+import UploadFileModel, { GetString, HandleFileUpload } from './UploadFileModel';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { uploadFile } from './UploadFileModelTest';
 import { LABEL_TEXT } from '@/components/UploadInput';
@@ -18,7 +18,8 @@ describe('UploadPhrases', () => {
                 <UploadFileModel
                     title='Example'
                     getInitFeedback={successInitFeedback}
-                    postFile={successPostFile}
+                    uploadFile={successPostFile}
+                    abortUpload={() => { }}
                 />
             </QueryClientProvider>
         )
@@ -31,7 +32,8 @@ describe('UploadPhrases', () => {
                 <UploadFileModel
                     title='Example'
                     getInitFeedback={successInitFeedback}
-                    postFile={successPostFile}
+                    uploadFile={successPostFile}
+                    abortUpload={() => { }}
                 />
             </QueryClientProvider>
         )
@@ -46,41 +48,25 @@ describe('UploadPhrases', () => {
         expect(document.activeElement).toBe(fileInput)
     })
 
-    it('shows feedback success', async () => {
+    it('tab navigate to control button', async () => {
         render(
             <QueryClientProvider client={queryClient}>
                 <UploadFileModel
                     title='Example'
                     getInitFeedback={successInitFeedback}
-                    postFile={successPostFile}
+                    uploadFile={successPostFile}
+                    abortUpload={() => { }}
                 />
             </QueryClientProvider>
         )
-
-        const feedbackSuccess = await screen.findByText(initFeedbackSuccessStr)
-
-        expect(feedbackSuccess).not.toBeNull()
-    })
-
-    // note very behaviour-y
-    it('allows file upload', async () => {
-        render(
-            <QueryClientProvider client={queryClient}>
-                <UploadFileModel
-                    title='Example'
-                    getInitFeedback={successInitFeedback}
-                    postFile={successPostFile}
-                />
-            </QueryClientProvider>
-        )
-
-        const file = new File(['hello'], 'hello.png', { type: 'image/png' })
         const user = userEvent.setup()
 
-        const fileInput = await uploadFile(screen, user, file)
+        const controlButton = await screen.findByRole("button")
 
-        expect(fileInput.files[0]).toBe(file)
-        expect(fileInput.files.item(0)).toBe(file)
-        expect(fileInput.files).toHaveLength(1)
+        while (controlButton !== document.activeElement) {
+            await user.tab()
+        }
+
+        expect(document.activeElement).toBe(controlButton)
     })
 })

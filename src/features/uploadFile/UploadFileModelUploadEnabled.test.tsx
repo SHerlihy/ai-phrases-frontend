@@ -1,17 +1,21 @@
-import { describe, expect, it } from 'vitest';
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import UploadFileModel, { FEEDBACK_PENDING, HandleFileUpload } from './UploadFileModel';
+import UploadFileModel, { FEEDBACK_ERROR, FEEDBACK_PENDING } from './UploadFileModel';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { LABEL_TEXT } from '@/components/UploadInput';
 import { getInitFeedbackResolvers, getUploadResolvers, uploadFile } from './UploadFileModelTest';
 
+
+const successInit = "SUCCESS ON INIT"
+const abortMessage = "ABORT CALLED"
+
+
 describe('Upload enabled', () => {
-    async function renderInitSuccess() {
 
-        const successInit = "SUCCESS ON INIT"
-
+    const setupPending = () => {
         const queryClient = new QueryClient()
+        const { getInitFeedback, resolve: initResolve, reject: initReject } = getInitFeedbackResolvers()
         const { handleFileUpload, resolve, reject } = getUploadResolvers()
 
         render(
@@ -19,55 +23,181 @@ describe('Upload enabled', () => {
                 <UploadFileModel
                     title='Example'
                     getInitFeedback={() => { return Promise.resolve(successInit) }}
-                    postFile={handleFileUpload}
+                    uploadFile={handleFileUpload}
+                    abortUpload={() => { reject(new Error(abortMessage)) }}
                 />
             </QueryClientProvider>
         )
 
-        await waitFor(() => {
-            const feedback = screen.queryByText(new RegExp(successInit))
-            expect(feedback).not.toBeNull()
-        })
-
-        return { resolve, reject }
-
+        return {
+            init: { getInitFeedback, initResolve, initReject },
+            upload: { handleFileUpload, resolve, reject }
+        }
     }
-    it('is enabled when init pending', async () => {
 
-        const successPostFile: HandleFileUpload = async () => { return "from post" }
-        const queryClient = new QueryClient()
-        const { getInitFeedback } = getInitFeedbackResolvers()
+    describe('from init success', () => {
 
-        render(
-            <QueryClientProvider client={queryClient}>
-                <UploadFileModel
-                    title='Example'
-                    getInitFeedback={getInitFeedback}
-                    postFile={successPostFile}
-                />
-            </QueryClientProvider>
-        )
+        const initSuccess = "Init Success"
 
-        const fileInput = await screen.findByLabelText(LABEL_TEXT) as HTMLInputElement
-        expect(fileInput.disabled === false)
+        const setupInitSuccess = () => {
 
-    })
+            const {
+                init: { getInitFeedback, initResolve, initReject },
+                upload: { handleFileUpload, resolve, reject }
+            } = setupPending()
 
-    it('is disabled when upload pending', async () => {
+            act(() => {
+                initResolve(initSuccess)
+            })
 
-        const { resolve, reject } = await renderInitSuccess()
-        const findRegexp = new RegExp(FEEDBACK_PENDING)
+            return { handleFileUpload, resolve, reject }
+        }
 
-        const user = userEvent.setup()
-        await act(async () => {
-            await uploadFile(screen, user)
+        describe('upload pending', () => {
+            let handleFileUpload
+            let resolve
+            let reject
+
+            beforeEach(async () => {
+                const setupRet = setupInitSuccess()
+
+                const user = userEvent.setup()
+                await act(async () => {
+                    await uploadFile(screen, user)
+                })
+
+                handleFileUpload = setupRet.handleFileUpload
+                resolve = setupRet.resolve
+                reject = setupRet.reject
+            })
+
+            it('disables input', async () => {
+
+                const fileInput = await screen.findByLabelText(LABEL_TEXT) as HTMLInputElement
+                expect(fileInput.disabled === true)
+
+            })
+
+            it('shows pending', async () => {
+
+                await screen.findByText(FEEDBACK_PENDING)
+
+            })
         })
 
-        await screen.findByText(findRegexp)
+        describe('upload error', () => {
+            const uploadError = "upload error"
+            let handleFileUpload
+            let resolve
+            let reject
 
-        const fileInput = await screen.findByLabelText(LABEL_TEXT) as HTMLInputElement
-        expect(fileInput.disabled === true)
+            beforeEach(async () => {
+                const setupRet = setupInitSuccess()
 
+                const user = userEvent.setup()
+                await act(async () => {
+                    await uploadFile(screen, user)
+                })
+
+                act(() => {
+                    setupRet.reject(new Error(uploadError))
+                })
+
+                handleFileUpload = setupRet.handleFileUpload
+                resolve = setupRet.resolve
+                reject = setupRet.reject
+            })
+
+            it('enables input', async () => {
+
+                const fileInput = await screen.findByLabelText(LABEL_TEXT) as HTMLInputElement
+                expect(fileInput.disabled === false)
+
+            })
+
+            it('shows error', async () => {
+
+                await screen.findByText(FEEDBACK_ERROR)
+
+            })
+        })
+
+        describe('upload abort', () => {
+            let handleFileUpload
+            let resolve
+            let reject
+
+            beforeEach(async () => {
+                const setupRet = setupInitSuccess()
+
+                const user = userEvent.setup()
+                await act(async () => {
+                    await uploadFile(screen, user)
+                })
+
+                const controlButton = await screen.findByText(FEEDBACK_PENDING)
+                act(() => {
+                    user.click(controlButton)
+                })
+
+                handleFileUpload = setupRet.handleFileUpload
+                resolve = setupRet.resolve
+                reject = setupRet.reject
+            })
+
+            it('enables input', async () => {
+
+                const fileInput = await screen.findByLabelText(LABEL_TEXT) as HTMLInputElement
+                expect(fileInput.disabled === false)
+
+            })
+
+            it('shows error', async () => {
+
+                await screen.findByText(FEEDBACK_ERROR)
+
+            })
+        })
+
+        describe('upload success', () => {
+
+            const uploadSuccess = "upload success"
+
+            let handleFileUpload
+            let resolve
+            let reject
+
+            beforeEach(async () => {
+                const setupRet = setupInitSuccess()
+
+                const user = userEvent.setup()
+                await act(async () => {
+                    await uploadFile(screen, user)
+                })
+
+                act(() => {
+                    setupRet.resolve(uploadSuccess)
+                })
+
+                handleFileUpload = setupRet.handleFileUpload
+                resolve = setupRet.resolve
+                reject = setupRet.reject
+            })
+
+            it('enables input', async () => {
+
+                const fileInput = await screen.findByLabelText(LABEL_TEXT) as HTMLInputElement
+                expect(fileInput.disabled === false)
+
+            })
+
+            it('shows success', async () => {
+
+                await screen.findByText(uploadSuccess)
+
+            })
+        })
     })
+
 })
 
