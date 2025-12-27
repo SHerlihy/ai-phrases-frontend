@@ -33,7 +33,7 @@ const MarkStory = () => {
             <UploadFileModel
                 title="Phrases"
                 getInitFeedback={getFilename}
-                postFile={uploadFile}
+                uploadFile={uploadFile}
                 abortUpload={abortFileUpload}
             />
             <QueryStoryModel
