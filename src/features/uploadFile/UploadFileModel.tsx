@@ -29,20 +29,16 @@ const UploadFileModel = ({
     const [isInit, setIsInit] = useState(true)
     const [phase, setPhase] = useState<Phase>("idle")
 
-    async function handleInitFeedback() {
-        const [error, feedback] = await getInitFeedback()
-
-        if (error) {
-            throw error
-        }
-
-        return feedback
-    }
-
     async function handleMutation(e?: ChangeEvent<HTMLInputElement>) {
 
         if (!e) {
-            return await handleInitFeedback()
+            const [error, feedback] = await catchError(getInitFeedback())
+
+            if (error) {
+                throw error
+            }
+
+            return feedback
         }
 
         setIsInit(false)

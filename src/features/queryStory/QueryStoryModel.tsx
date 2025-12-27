@@ -18,17 +18,17 @@ function QueryStoryModel({
     abortMarkStory
 }: Props) {
 
-    const { data, mutateAsync, isError } = useMutation({
+    const { data, mutateAsync, isError, isSuccess } = useMutation({
         mutationFn: postMarkStory
     })
 
     const [marked, setMarked] = useState<string | null>(null)
 
     useEffect(() => {
-        if (data && data[1]) {
-            setMarked(data[1])
+        if (data) {
+            setMarked(data)
         }
-    }, [data])
+    }, [isSuccess])
 
     return (
         <QueryClientProvider client={queryClient}>

@@ -5,6 +5,7 @@ import QueryStoryModel from '@/features/queryStory/QueryStoryModel'
 import { HandleSubmit } from '@/features/queryStory/QueryStoryView'
 import UploadFileControls from '@/features/uploadFile/UploadFileControls'
 import UploadFileModel from '@/features/uploadFile/UploadFileModel'
+import { catchError } from '@/lib/async'
 
 const BUCKET_URL = ""
 const POST_QUERY_URL = ""
@@ -13,12 +14,13 @@ const getKey = () => {
     return getParam("key")
 }
 
+const { uploadFile, abortFileUpload, getFilename } = new UploadFileControls(BUCKET_URL)
+const { postQuery, demarshall, abortQuery } = new QueryStoryControl(POST_QUERY_URL, getKey)
+
 const MarkStory = () => {
-    const { uploadFile, abortFileUpload, getFilename } = new UploadFileControls(BUCKET_URL)
-    const { postQuery, demarshall, abortQuery } = new QueryStoryControl(POST_QUERY_URL, getKey)
 
     const handlePostMarkStory: HandleSubmit = async (story) => {
-        const [error, response] = await postQuery(story)
+        const [error, response] = await catchError(postQuery(story))
 
         if (error) {
             throw error

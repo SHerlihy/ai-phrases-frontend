@@ -1,7 +1,7 @@
 type QueryResponse = Response
 
 interface IQueryStoryControl {
-    postQuery: (story: string) => Promise<[undefined, QueryResponse] | [Error]>
+    postQuery: (story: string) => Promise<QueryResponse>
     demarshall: (res: QueryResponse) => Promise<string>
     abortQuery: (reason?: any) => void
 }
@@ -17,7 +17,7 @@ class QueryStoryControl implements IQueryStoryControl {
         this.getParam = getParam
     }
 
-    postQuery = async (story: string): Promise<[undefined, QueryResponse] | [Error]> => {
+    postQuery = async (story: string): Promise<QueryResponse> => {
         const param = this.getParam()
         const params = new URLSearchParams();
         params.append("key", param)
@@ -25,10 +25,10 @@ class QueryStoryControl implements IQueryStoryControl {
         const response = await this.markStoryRequest(story, params)
 
         if (response.status !== 200) {
-            return [new Error(`Query story status: ${response.status}`)]
+            throw Error(`Query story status: ${response.status}`)
         }
 
-        return [undefined, response]
+        return response
     }
 
     demarshall = async (queryRes: QueryResponse) => {
@@ -72,16 +72,16 @@ class QueryStoryControl implements IQueryStoryControl {
             satusText: "Upload complete"
         }
 
-        const failResponse = new Response("", failOpts)
+        const failResponse = new Response("Query failed", failOpts)
 
         const successResponse = new Response("marked story", successOpts)
 
-        const rnd = Math.random()
-
-        if (rnd > 0.5) {
-            return failResponse
-        }
-
+        // const rnd = Math.random()
+        //
+        // if (rnd > 0.5) {
+        //     return failResponse
+        // }
+        //
         return successResponse
     }
 }

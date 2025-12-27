@@ -3,7 +3,7 @@ import { GetString } from "./UploadFileModel";
 import { xml2json } from "xml-js";
 
 type Contents = {
-    Key: string,
+    Key: { _text: string },
     LastModified: Date,
     ETag: string,
     Size: number,
@@ -49,7 +49,7 @@ class UploadFileControls implements IUploadFileControls {
 
         formData.append('file', file);
 
-        const response = await this.getFilenameRequest()
+        const response = await this.uploadFileRequest(formData)
 
         if (response.status !== 200) {
             throw new Error(`Upload file status: ${response.status}`)
@@ -62,7 +62,7 @@ class UploadFileControls implements IUploadFileControls {
         this.controller.abort(reason)
     }
 
-    getFilename = async() => {
+    getFilename = async () => {
 
         const response = await this.getFilenameRequest()
 
@@ -78,7 +78,7 @@ class UploadFileControls implements IUploadFileControls {
             contents = [contents]
         }
 
-        return contents[0].Key
+        return contents[0].Key._text
     }
 
     getFilenameRequest = async () => {
@@ -98,7 +98,9 @@ class UploadFileControls implements IUploadFileControls {
             satusText: "Init complete"
         }
 
-        const successResponse = new Response("Init filename", successOpts)
+        const body = `<ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/"><Name>docs20251208092312443700000001</Name><Prefix></Prefix><Marker></Marker><MaxKeys>1000</MaxKeys><IsTruncated>false</IsTruncated><Contents><Key>test</Key><LastModified>2025-12-08T09:23:14.000Z</LastModified><ETag>&quot;6f60928828f542d580e1c351d5a7f1d6&quot;</ETag><ChecksumAlgorithm>CRC32</ChecksumAlgorithm><ChecksumType>FULL_OBJECT</ChecksumType><Size>18</Size><Owner><ID>78bfabc0437c878363bcf10ecff51bdfada2cf453437923e11c249d047ca5da9</ID></Owner><StorageClass>STANDARD</StorageClass></Contents></ListBucketResult>`
+
+        const successResponse = new Response(body, successOpts)
 
         return successResponse
     }
@@ -114,7 +116,7 @@ class UploadFileControls implements IUploadFileControls {
     }
 
 
-    uploadFileRequest = async (formData: FormData) => {
+    uploadFileRequest = async (formData: FormData): Promise<Response> => {
         if (import.meta.env.DEV) {
             return await this.uploadFileRequestDev()
         }
@@ -125,6 +127,7 @@ class UploadFileControls implements IUploadFileControls {
     uploadFileRequestDev = async () => {
 
         await new Promise(r => setTimeout(r, 2000));
+
 
         const failOpts = {
             status: 400,
@@ -140,6 +143,10 @@ class UploadFileControls implements IUploadFileControls {
 
         const successResponse = new Response("Uploaded file name", successOpts)
 
+        if (this.controller.signal.aborted) {
+            return failResponse
+        }
+
         const rnd = Math.random()
 
         if (rnd > 0.5) {
@@ -151,7 +158,7 @@ class UploadFileControls implements IUploadFileControls {
 
     uploadFileRequestProd = async (formData: FormData) => {
 
-        await fetch(this.baseUrl,
+        return await fetch(this.baseUrl,
             {
                 method: "PUT",
                 headers: {
