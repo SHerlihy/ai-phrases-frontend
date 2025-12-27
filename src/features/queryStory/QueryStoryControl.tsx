@@ -17,11 +17,10 @@ class QueryStoryControl implements IQueryStoryControl {
         this.getParam = getParam
     }
 
-    async postQuery(story: string): Promise<[undefined, QueryResponse] | [Error]> {
+    postQuery = async (story: string): Promise<[undefined, QueryResponse] | [Error]> => {
         const param = this.getParam()
         const params = new URLSearchParams();
         params.append("key", param)
-
 
         const response = await this.markStoryRequest(story, params)
 
@@ -32,11 +31,11 @@ class QueryStoryControl implements IQueryStoryControl {
         return [undefined, response]
     }
 
-    async demarshall(queryRes: QueryResponse) {
+    demarshall = async (queryRes: QueryResponse) => {
         return await queryRes.text()
     }
 
-    abortQuery(reason?: any) {
+    abortQuery = (reason?: any) => {
         this.controller.abort(reason)
     }
 
