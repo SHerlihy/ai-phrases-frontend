@@ -6,7 +6,7 @@ import UploadFileControls from '@/features/uploadFile/UploadFileControls'
 import UploadFileModel from '@/features/uploadFile/UploadFileModel'
 import { catchError } from '@/lib/async'
 
-const BUCKET_URL = ""
+const BUCKET_URL = "https://32th7r2f0h.execute-api.eu-west-2.amazonaws.com/main/docs20251227222148605600000001/"
 const POST_QUERY_URL = ""
 
 const { setParam, getParam } = new ParamStore()
@@ -15,7 +15,7 @@ const getKey = () => {
     return getParam("key")
 }
 
-const { loadFile, uploadFile, abortFileUpload, getFilename } = new UploadFileControls(BUCKET_URL)
+const { loadFile, uploadFile, abortFileUpload, getFilename } = new UploadFileControls(BUCKET_URL, getKey)
 const { postQuery, demarshall, abortQuery } = new QueryStoryControl(POST_QUERY_URL, getKey)
 
 const MarkStory = () => {
@@ -40,13 +40,13 @@ const MarkStory = () => {
                 uploadFile={uploadFile}
                 abortUpload={abortFileUpload}
             />
-            <QueryStoryModel
-                postMarkStory={handlePostMarkStory}
-                abortMarkStory={abortQuery}
-            />
         </>
     )
 
 }
 
+            // <QueryStoryModel
+            //     postMarkStory={handlePostMarkStory}
+            //     abortMarkStory={abortQuery}
+            // />
 export default MarkStory
