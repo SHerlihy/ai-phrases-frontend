@@ -23,7 +23,7 @@ class QueryStoryControl implements IQueryStoryControl {
 
         const param = this.getParam()
         const params = new URLSearchParams();
-        params.append("key", param)
+        params.append("authKey", param)
 
         const response = await this.markStoryRequest(story, params)
 
@@ -43,9 +43,9 @@ class QueryStoryControl implements IQueryStoryControl {
     }
 
     markStoryRequest = async (story: string, params: URLSearchParams) => {
-        if (import.meta.env.DEV) {
-            return await this.markStoryRequestDev()
-        }
+        // if (import.meta.env.DEV) {
+        //     return await this.markStoryRequestDev()
+        // }
 
         return await this.markStoryRequestProd(story, params)
     }
@@ -55,6 +55,9 @@ class QueryStoryControl implements IQueryStoryControl {
 
         return await fetch(`${this.postUrl}?${params}`, {
             method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
             mode: "cors",
             signal: this.controller.signal,
             body: story
