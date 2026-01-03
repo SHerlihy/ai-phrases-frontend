@@ -71,7 +71,7 @@ const UploadFileModel = ({
         }
 
         if (isPending && !isInit) {
-            setPhase("uploading")
+            setPhase("pending")
             setFeedback("cancel?")
             return
         }
@@ -83,7 +83,7 @@ const UploadFileModel = ({
             case "ready":
                 mutate()
                 break;
-            case "uploading":
+            case "pending":
                 abortUpload()
                 break;
             case "error":

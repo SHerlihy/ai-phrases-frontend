@@ -1,5 +1,4 @@
 import { ChangeEvent } from "react";
-import { GetString } from "./UploadFileModel";
 import { xml2json } from "xml-js";
 
 type Contents = {
@@ -29,16 +28,35 @@ interface IUploadFileControls {
     loadFile: (e: ChangeEvent<HTMLInputElement>) => void
     uploadFile: () => Promise<string>
     abortFileUpload: (reason?: any) => void
-    getFilename: GetString
+    getFilename: () => Promise<string>
 }
 
 class UploadFileControls implements IUploadFileControls {
     controller = new AbortController()
 
-    baseUrl: string;
+    bucketUrl: string;
+    listUrl: string;
+    phrasesUrl: string;
+
+    getAuthKey: () => string;
+
     file: File | null = null;
 
-    constructor(baseUrl: string) { this.baseUrl = baseUrl }
+    constructor(bucketUrl: string, getAuthKey: () => string) {
+        this.bucketUrl = bucketUrl
+        this.listUrl = `${this.bucketUrl}list/`
+        this.phrasesUrl = `${this.bucketUrl}phrases/`
+
+        this.getAuthKey = getAuthKey
+    }
+
+    getListUrl = () => {
+        return `${this.listUrl}?authKey=${this.getAuthKey()}`
+    }
+
+    getPhrasesUrl = () => {
+        return `${this.phrasesUrl}?authKey=${this.getAuthKey()}`
+    }
 
     loadFile = (e: ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files
@@ -96,9 +114,9 @@ class UploadFileControls implements IUploadFileControls {
     }
 
     getFilenameRequest = async () => {
-        if (import.meta.env.DEV) {
-            return await this.getFilenameRequestDev()
-        }
+        // if (import.meta.env.DEV) {
+        //     return await this.getFilenameRequestDev()
+        // }
 
         return await this.getFilenameRequestProd()
     }
@@ -121,7 +139,7 @@ class UploadFileControls implements IUploadFileControls {
 
     getFilenameRequestProd = async () => {
 
-        return await fetch(this.baseUrl, {
+        return await fetch(this.getListUrl(), {
             method: "GET",
             mode: "cors",
             signal: this.controller.signal
@@ -174,11 +192,11 @@ class UploadFileControls implements IUploadFileControls {
 
     uploadFileRequestProd = async (formData: FormData) => {
 
-        return await fetch(this.baseUrl,
+        return await fetch(this.getPhrasesUrl(),
             {
                 method: "PUT",
                 headers: {
-                    'Content-Type': 'multipart/form-data',
+                    'Content-Type': 'multipart/form-data'
                 },
                 mode: "cors",
                 signal: this.controller.signal,

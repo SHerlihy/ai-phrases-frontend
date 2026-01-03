@@ -26,7 +26,7 @@ const UploadFileView = (
             </CardTitle>
             <UploadInput
                 handleChange={handleChange}
-                disabled={phase === "uploading"}
+                disabled={phase === "pending"}
             />
             <ControlButton
                 feedback={feedback}
