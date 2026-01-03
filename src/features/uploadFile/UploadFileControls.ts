@@ -114,9 +114,9 @@ class UploadFileControls implements IUploadFileControls {
     }
 
     getFilenameRequest = async () => {
-        if (import.meta.env.DEV) {
-            return await this.getFilenameRequestDev()
-        }
+        // if (import.meta.env.DEV) {
+        //     return await this.getFilenameRequestDev()
+        // }
 
         return await this.getFilenameRequestProd()
     }

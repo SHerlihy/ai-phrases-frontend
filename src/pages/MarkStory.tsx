@@ -7,7 +7,8 @@ import UploadFileModel from '@/features/uploadFile/UploadFileModel'
 // import QueryStoryModel from '@/features/queryStory/QueryStoryModel'
 // import { catchError } from '@/lib/async'
 
-const BUCKET_URL = "https://1jp6i56akb.execute-api.eu-west-2.amazonaws.com/main/docs20251230081756234200000001/"
+
+const BUCKET_URL = "https://3ddmzupq9c.execute-api.us-east-1.amazonaws.com/main/kbaas/"
 
 const { setParam, getParam } = new ParamStore()
 
