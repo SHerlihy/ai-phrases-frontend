@@ -8,7 +8,7 @@ import QueryStoryModel from '@/features/queryStory/QueryStoryModel'
 import { catchError } from '@/lib/async'
 
 
-const BUCKET_URL = "https://7v84mplfpe.execute-api.us-east-1.amazonaws.com/main/kbaas/"
+const BUCKET_URL = "https://8cpe165rgi.execute-api.us-east-1.amazonaws.com/main/kbaas/"
 
 const { setParam, getParam } = new ParamStore()
 
@@ -16,7 +16,7 @@ const getKey = () => {
     return getParam("key")
 }
 
-const { loadFile, uploadFile, abortFileUpload, getFilename } = new UploadFileControls(BUCKET_URL, getKey)
+const { loadFile, uploadFile, abortFileUpload } = new UploadFileControls(BUCKET_URL, getKey)
 
 const POST_QUERY_URL = `${BUCKET_URL}query/`
 const { postQuery, demarshall, abortQuery } = new QueryStoryControl(POST_QUERY_URL, getKey)
@@ -38,7 +38,6 @@ const MarkStory = () => {
             <ParamInput title={"key"} setParam={setParam} />
             <UploadFileModel
                 title="Phrases"
-                getInitFeedback={getFilename}
                 loadFile={loadFile}
                 uploadFile={uploadFile}
                 abortUpload={abortFileUpload}
