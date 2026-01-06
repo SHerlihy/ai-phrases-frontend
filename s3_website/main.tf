@@ -18,9 +18,9 @@ module "s3" {
 module "upload" {
   source = "./upload"
 
-  s3_id = module.s3.bucket_id
+  bucket_id = module.s3.bucket_id
 }
 
-output "website_url" {
-  value = module.s3.website_url
+output "website_endpoint" {
+  value = module.s3.website_endpoint
 }
