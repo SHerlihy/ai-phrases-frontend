@@ -6,34 +6,19 @@ import { Phase } from '@/components/controlButton/ControlButton'
 
 const UploadFileModel = ({
     title,
-    getInitFeedback,
     loadFile,
     uploadFile,
     abortUpload
 }: {
     title: string,
-    getInitFeedback: () => Promise<string>,
     loadFile: (e: ChangeEvent<HTMLInputElement>) => void,
     uploadFile: () => Promise<string>,
     abortUpload: (reason?: any) => void
 }) => {
-    const [isInit, setIsInit] = useState(true)
     const [phase, setPhase] = useState<Phase>("idle")
     const [feedback, setFeedback] = useState("searching...")
 
     async function handleMutation() {
-
-        if (isInit) {
-            setIsInit(false)
-
-            const [error, feedback] = await catchError(getInitFeedback())
-
-            if (error) {
-                throw error
-            }
-
-            return feedback
-        }
 
         const [error, data] = await catchError(uploadFile())
 
@@ -70,7 +55,7 @@ const UploadFileModel = ({
             return
         }
 
-        if (isPending && !isInit) {
+        if (isPending) {
             setPhase("pending")
             setFeedback("cancel?")
             return
