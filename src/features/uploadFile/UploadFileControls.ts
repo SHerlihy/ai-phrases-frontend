@@ -44,10 +44,7 @@ class UploadFileControls implements IUploadFileControls {
             throw new Error(`No file to upload`)
         }
 
-        const formData = new FormData();
-        formData.append('file', this.file);
-
-        const response = await this.uploadFileRequest(formData)
+        const response = await this.uploadFileRequest(this.file)
 
         if (response.status !== 200) {
             throw new Error(`Upload file status: ${response.status}`)
@@ -63,12 +60,12 @@ class UploadFileControls implements IUploadFileControls {
         this.controller.abort(reason)
     }
 
-    uploadFileRequest = async (formData: FormData): Promise<Response> => {
+    uploadFileRequest = async (file: File): Promise<Response> => {
         // if (import.meta.env.DEV) {
         //     return await this.uploadFileRequestDev()
         // }
         //
-        return await this.uploadFileRequestProd(formData)
+        return await this.uploadFileRequestProd(file)
     }
 
     uploadFileRequestDev = async () => {
@@ -105,17 +102,17 @@ class UploadFileControls implements IUploadFileControls {
         return successResponse
     }
 
-    uploadFileRequestProd = async (formData: FormData) => {
+    uploadFileRequestProd = async (file: File) => {
 
         return await fetch(this.getPhrasesUrl(),
             {
                 method: "PUT",
                 headers: {
-                    'Content-Type': 'multipart/form-data'
+                    'Content-Type': file.type
                 },
                 mode: "cors",
                 signal: this.controller.signal,
-                body: formData
+                body: file
             }
         )
     }
