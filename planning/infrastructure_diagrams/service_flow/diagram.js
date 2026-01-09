@@ -1,4 +1,4 @@
-```mermaid
+const serviceFlow = `
     flowchart LR
 
     subgraph user
@@ -70,4 +70,7 @@
 
     AUTH_KEY ~~~ upload_ready & mark_ready
     AUTH_KEY -- get --> upload_working & mark_working
-```
+
+`
+
+export default serviceFlow

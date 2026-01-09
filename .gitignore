@@ -1,6 +1,8 @@
 worktrees
 storybook-static
 
+**/*lock.json
+
 # Local .terraform directories
 **/.terraform/*
 **/.terraform.*
