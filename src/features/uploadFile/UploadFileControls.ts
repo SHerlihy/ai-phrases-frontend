@@ -11,6 +11,7 @@ class UploadFileControls implements IUploadFileControls {
 
     bucketUrl: string;
     phrasesUrl: string;
+    syncUrl: string;
 
     getAuthKey: () => string;
 
@@ -19,12 +20,17 @@ class UploadFileControls implements IUploadFileControls {
     constructor(bucketUrl: string, getAuthKey: () => string) {
         this.bucketUrl = bucketUrl
         this.phrasesUrl = `${this.bucketUrl}phrases/`
+        this.syncUrl = `${this.bucketUrl}phrases/`
 
         this.getAuthKey = getAuthKey
     }
 
     getPhrasesUrl = () => {
         return `${this.phrasesUrl}?authKey=${this.getAuthKey()}`
+    }
+
+    getSyncUrl = () => {
+        return `${this.syncUrl}?authKey=${this.getAuthKey()}`
     }
 
     loadFile = (e: ChangeEvent<HTMLInputElement>) => {
@@ -104,7 +110,7 @@ class UploadFileControls implements IUploadFileControls {
 
     uploadFileRequestProd = async (file: File) => {
 
-        return await fetch(this.getPhrasesUrl(),
+        const uploadResponse = await fetch(this.getPhrasesUrl(),
             {
                 method: "PUT",
                 headers: {
@@ -115,6 +121,17 @@ class UploadFileControls implements IUploadFileControls {
                 body: file
             }
         )
+
+        // really calling it anyway?
+        await fetch(this.getSyncUrl(),
+            {
+                method: "PATCH",
+                mode: "cors",
+                signal: this.controller.signal
+            }
+        )
+
+        return uploadResponse
     }
 
 }
