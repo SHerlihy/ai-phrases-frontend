@@ -20,7 +20,7 @@ class UploadFileControls implements IUploadFileControls {
     constructor(bucketUrl: string, getAuthKey: () => string) {
         this.bucketUrl = bucketUrl
         this.phrasesUrl = `${this.bucketUrl}phrases/`
-        this.syncUrl = `${this.bucketUrl}phrases/`
+        this.syncUrl = `${this.bucketUrl}sync/`
 
         this.getAuthKey = getAuthKey
     }
