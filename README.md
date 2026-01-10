@@ -1,12 +1,16 @@
 ```mermaid
     flowchart LR
 
-    subgraph user
+    USER[user]
+
+    subgraph feelings
         HAPPY[😊]
         SAD[😭]
     end
 
     AUTH_KEY[Auth input]
+
+    USER -.-> AUTH_KEY
     
     subgraph upload_file
         subgraph upload_ready
@@ -34,6 +38,9 @@
 
         upload_succeeded --> upload_ready
     end
+
+    USER ~~~ upload_ready
+    USER <-.-> upload_file
 
     upload_failed -.- SAD
     upload_succeeded -.- HAPPY
@@ -64,6 +71,9 @@
 
         mark_succeeded --> mark_ready
     end
+
+    USER ~~~ mark_ready
+    USER <-.-> mark_story
 
     mark_failed -.- SAD
     mark_succeeded -.- HAPPY
