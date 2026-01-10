@@ -67,10 +67,10 @@ class UploadFileControls implements IUploadFileControls {
     }
 
     uploadFileRequest = async (file: File): Promise<Response> => {
-        // if (import.meta.env.DEV) {
-        //     return await this.uploadFileRequestDev()
-        // }
-        //
+        if (import.meta.env.DEV) {
+            return await this.uploadFileRequestDev()
+        }
+
         return await this.uploadFileRequestProd(file)
     }
 

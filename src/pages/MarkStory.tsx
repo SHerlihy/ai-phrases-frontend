@@ -8,7 +8,7 @@ import QueryStoryModel from '@/features/queryStory/QueryStoryModel'
 import { catchError } from '@/lib/async'
 
 
-const BUCKET_URL = "https://3ftkdogxqa.execute-api.us-east-1.amazonaws.com/main/kbaas/"
+const BUCKET_URL = "https://qp57gigiac.execute-api.us-east-1.amazonaws.com/main/kbaas/"
 
 const { setParam, getParam } = new ParamStore()
 

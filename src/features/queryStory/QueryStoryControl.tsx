@@ -43,10 +43,6 @@ class QueryStoryControl implements IQueryStoryControl {
     }
 
     markStoryRequest = async (story: string, params: URLSearchParams) => {
-        // if (import.meta.env.DEV) {
-        //     return await this.markStoryRequestDev()
-        // }
-
         return await this.markStoryRequestProd(story, params)
     }
 
@@ -62,40 +58,6 @@ class QueryStoryControl implements IQueryStoryControl {
             signal: this.controller.signal,
             body: story
         })
-    }
-
-    markStoryRequestDev = async (): Promise<Response> => {
-
-        await Promise.race([
-            new Promise(resolve => setTimeout(resolve, 2000)),
-            new Promise((_, reject) =>
-                this.controller.signal.onabort = () => {
-                    reject(new Error("Upload aborted"))
-                }
-            ),
-        ])
-
-        const failOpts = {
-            status: 400,
-            statusText: "Error"
-        }
-
-        const successOpts = {
-            status: 200,
-            satusText: "Upload complete"
-        }
-
-        const failResponse = new Response("Query failed", failOpts)
-
-        const successResponse = new Response("marked story", successOpts)
-
-        const rnd = Math.random()
-
-        if (rnd > 0.5) {
-            return failResponse
-        }
-
-        return successResponse
     }
 }
 
