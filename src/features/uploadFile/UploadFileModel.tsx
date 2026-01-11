@@ -26,7 +26,6 @@ const UploadFileModel = ({
     const [feedback, setFeedback] = useState(UNABLE)
 
     function changeFile(e: ChangeEvent<HTMLInputElement>) {
-        abortUpload(ABORT_FROM_CHANGE)
         loadFile(e)
         setPhase("ready")
         setFeedback(READY)
@@ -44,7 +43,7 @@ const UploadFileModel = ({
 
     }
 
-    const { isSuccess, isPending, isError, error, data, mutate } = useMutation({
+    const { isSuccess, isPending, isError, data, mutate } = useMutation({
         mutationFn: handleMutation,
         retry: false
     })
@@ -57,10 +56,7 @@ const UploadFileModel = ({
             return
         }
 
-        if (
-            isError &&
-            error.message !== ABORT_FROM_CHANGE
-        ) {
+        if (isError) {
             setPhase("error")
             setFeedback(ERROR)
             return

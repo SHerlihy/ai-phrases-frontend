@@ -1,5 +1,5 @@
 import { describe, expect, expectTypeOf, it } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import UploadFileModel, { ERROR, PENDING, READY, UNABLE } from './UploadFileModel';
@@ -123,6 +123,7 @@ describe('UploadFile', () => {
         const user = userEvent.setup()
         const fileInput = await screen.findByPlaceholderText(PLACEHOLDER) as HTMLInputElement
         const file = new File(['hello'], filename, { type: 'image/png' })
+
         await user.upload(fileInput, file)
 
         const re = new RegExp(filename);
@@ -163,7 +164,7 @@ describe('UploadFile', () => {
     }
 
     describe('uploading', () => {
-        testPhase('uploading', setupUploading, false, false)
+        testPhase('uploading', setupUploading, true, false)
     })
 
     async function setupFailed() {
