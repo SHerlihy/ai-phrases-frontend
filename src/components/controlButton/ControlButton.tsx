@@ -24,7 +24,7 @@ const ControlButton = ({
             disabled={phase === "idle"}
             {...props}
         >
-            <p>{feedback}</p>
+            {feedback}
         </Button>
     )
 }

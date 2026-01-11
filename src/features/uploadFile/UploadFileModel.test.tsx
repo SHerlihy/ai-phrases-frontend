@@ -1,72 +1,223 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, expectTypeOf, it } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import UploadFileModel, { GetString, HandleFileUpload } from './UploadFileModel';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { uploadFile } from './UploadFileModelTest';
-import { LABEL_TEXT } from '@/components/UploadInput';
+import UploadFileModel, { ERROR, PENDING, READY, UNABLE } from './UploadFileModel';
+import { PLACEHOLDER } from './UploadFileView';
+import { Reject, Resolve, withResolvers } from '@/lib/async';
 
-describe('UploadPhrases', () => {
+type HTMLInputElementWithFiles = HTMLInputElement & { files: FileList }
+
+export function uploadFileResolvers() {
+    const { promise, resolve, reject } = withResolvers()
+    const uploadFile = async () => { return await promise as Promise<string> }
+
+    return { uploadFile, resolve, reject }
+}
+
+let resolveUpload: Resolve;
+let rejectUpload: Reject;
+
+type SetupRet = {
+    controlBtn: HTMLButtonElement,
+    fileInput: HTMLInputElement
+}
+
+type Setup = () => Promise<SetupRet>
+
+describe('UploadFile', () => {
+
+    function testPhase(phase: string, setup: Setup, inputDisabled: boolean, controlDisabled: boolean) {
+        describe(phase, () => {
+            it('renders', async () => {
+                await setup()
+                screen.debug();
+            })
+
+            it(`changes to ${phase} phase`, async () => {
+                const {
+                    controlBtn,
+                    fileInput
+                } = await setup()
+
+                expectTypeOf(controlBtn).toExtend<HTMLButtonElement>()
+                expectTypeOf(fileInput).toExtend<HTMLInputElement>()
+
+                expect(fileInput.disabled === inputDisabled)
+                expect(controlBtn.disabled === controlDisabled)
+            })
+
+            if (!inputDisabled) {
+                it('tab navigate to file input', async () => {
+                    const {
+                        fileInput
+                    } = await setup()
+
+                    const user = userEvent.setup()
+
+                    await waitFor(async () => {
+                        await user.tab()
+                        expect(document.activeElement).toBe(fileInput)
+                    })
+                })
+            }
+
+            if (!controlDisabled) {
+                it('tab navigate to control button', async () => {
+                    const {
+                        controlBtn
+                    } = await setup()
+
+                    const user = userEvent.setup()
+
+                    await waitFor(async () => {
+                        await user.tab()
+                        expect(document.activeElement).toBe(controlBtn)
+                    })
+                })
+            }
+
+        })
+    }
+
     const queryClient = new QueryClient()
-    const initFeedbackSuccessStr = "init success"
-    const successInitFeedback: GetString = async () => { return initFeedbackSuccessStr }
 
-    const successPostFile: HandleFileUpload = async () => { return "from post" }
-    it('renders the component', () => {
+    const loadFile = () => { }
+
+    const setupInit = async () => {
+        const resolvers = uploadFileResolvers()
+        const { uploadFile, resolve, reject } = resolvers
+
         render(
             <QueryClientProvider client={queryClient}>
                 <UploadFileModel
                     title='Example'
-                    getInitFeedback={successInitFeedback}
-                    uploadFile={successPostFile}
+                    loadFile={loadFile}
+                    uploadFile={uploadFile}
                     abortUpload={() => { }}
                 />
             </QueryClientProvider>
         )
-        screen.debug();
+
+        resolveUpload = resolve
+        rejectUpload = reject
+
+        const controlBtn = await screen.findByText(UNABLE) as HTMLButtonElement
+        const fileInput = await screen.findByPlaceholderText(PLACEHOLDER) as HTMLInputElement
+
+        return {
+            controlBtn,
+            fileInput
+        }
+    }
+
+    describe('init', () => {
+        testPhase('init', setupInit, false, true)
     })
 
-    it('tab navigate to file input', async () => {
-        render(
-            <QueryClientProvider client={queryClient}>
-                <UploadFileModel
-                    title='Example'
-                    getInitFeedback={successInitFeedback}
-                    uploadFile={successPostFile}
-                    abortUpload={() => { }}
-                />
-            </QueryClientProvider>
-        )
+    async function setupReady() {
+        setupInit()
+
+        const filename = 'hello.png'
+
+        const user = userEvent.setup()
+        const fileInput = await screen.findByPlaceholderText(PLACEHOLDER) as HTMLInputElement
+        const file = new File(['hello'], filename, { type: 'image/png' })
+        await user.upload(fileInput, file)
+
+        const re = new RegExp(filename);
+
+        const controlBtn = await screen.findByText(READY) as HTMLButtonElement
+        const fileInputWithFile = await screen.findByDisplayValue(re) as HTMLInputElementWithFiles
+
+        return {
+            filename: filename,
+            controlBtn: controlBtn,
+            fileInput: fileInputWithFile
+        }
+    }
+
+    describe('ready', () => {
+        testPhase('ready', setupReady, false, false)
+    })
+
+    async function setupUploading() {
+        const {
+            filename,
+            controlBtn: readyBtn
+        } = await setupReady()
+
         const user = userEvent.setup()
 
-        const fileInput = await screen.findByLabelText(LABEL_TEXT)
+        const re = new RegExp(filename);
+        user.click(readyBtn)
 
-        while (fileInput !== document.activeElement) {
-            await user.tab()
+        const controlBtn = await screen.findByText(PENDING) as HTMLButtonElement
+        const fileInputWithFile = await screen.findByDisplayValue(re) as HTMLInputElementWithFiles
+
+        return {
+            filename,
+            controlBtn: controlBtn,
+            fileInput: fileInputWithFile
         }
+    }
 
-        expect(document.activeElement).toBe(fileInput)
+    describe('uploading', () => {
+        testPhase('uploading', setupUploading, false, false)
     })
 
-    it('tab navigate to control button', async () => {
-        render(
-            <QueryClientProvider client={queryClient}>
-                <UploadFileModel
-                    title='Example'
-                    getInitFeedback={successInitFeedback}
-                    uploadFile={successPostFile}
-                    abortUpload={() => { }}
-                />
-            </QueryClientProvider>
-        )
+    async function setupFailed() {
+        const {
+            filename,
+            controlBtn: uploadingBtn
+        } = await setupUploading()
+
         const user = userEvent.setup()
 
-        const controlButton = await screen.findByRole("button")
+        const re = new RegExp(filename);
+        user.click(uploadingBtn)
+        rejectUpload(Error("From test failed phase"))
 
-        while (controlButton !== document.activeElement) {
-            await user.tab()
+        const controlBtn = await screen.findByText(ERROR) as HTMLButtonElement
+        const fileInputWithFile = await screen.findByDisplayValue(re) as HTMLInputElementWithFiles
+
+        return {
+            filename,
+            controlBtn: controlBtn,
+            fileInput: fileInputWithFile
         }
+    }
 
-        expect(document.activeElement).toBe(controlButton)
+    describe('failed', () => {
+        testPhase('failed', setupFailed, false, false)
     })
+
+    async function setupSucceeded() {
+        const {
+            filename,
+            controlBtn: uploadingBtn
+        } = await setupUploading()
+
+        const user = userEvent.setup()
+
+        const re = new RegExp(filename);
+        user.click(uploadingBtn)
+
+        const successMsg = "Yippie"
+        resolveUpload(successMsg)
+
+        const controlBtn = await screen.findByText(successMsg) as HTMLButtonElement
+        const fileInputWithFile = await screen.findByDisplayValue(re) as HTMLInputElementWithFiles
+
+        return {
+            filename,
+            controlBtn: controlBtn,
+            fileInput: fileInputWithFile
+        }
+    }
+
+    describe('succeeded', () => {
+        testPhase('succeeded', setupSucceeded, false, false)
+    })
+
 })

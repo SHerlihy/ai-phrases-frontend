@@ -4,6 +4,13 @@ import UploadFileView from './UploadFileView'
 import { catchError } from '@/lib/async'
 import { Phase } from '@/components/controlButton/ControlButton'
 
+export const UNABLE = "file?"
+export const READY = "upload?"
+export const PENDING = "cancel?"
+export const ERROR = "retry?"
+
+export const ABORT_FROM_CHANGE = "user changed file"
+
 const UploadFileModel = ({
     title,
     loadFile,
@@ -16,7 +23,14 @@ const UploadFileModel = ({
     abortUpload: (reason?: any) => void
 }) => {
     const [phase, setPhase] = useState<Phase>("idle")
-    const [feedback, setFeedback] = useState("searching...")
+    const [feedback, setFeedback] = useState(UNABLE)
+
+    function changeFile(e: ChangeEvent<HTMLInputElement>) {
+        abortUpload(ABORT_FROM_CHANGE)
+        loadFile(e)
+        setPhase("ready")
+        setFeedback(READY)
+    }
 
     async function handleMutation() {
 
@@ -30,16 +44,10 @@ const UploadFileModel = ({
 
     }
 
-    const { isSuccess, isPending, isError, data, mutate } = useMutation({
+    const { isSuccess, isPending, isError, error, data, mutate } = useMutation({
         mutationFn: handleMutation,
         retry: false
     })
-
-    useEffect(() => {
-
-        mutate(undefined)
-
-    }, [])
 
     useEffect(() => {
 
@@ -49,15 +57,18 @@ const UploadFileModel = ({
             return
         }
 
-        if (isError) {
+        if (
+            isError &&
+            error.message !== ABORT_FROM_CHANGE
+        ) {
             setPhase("error")
-            setFeedback("retry?")
+            setFeedback(ERROR)
             return
         }
 
         if (isPending) {
             setPhase("pending")
-            setFeedback("cancel?")
+            setFeedback(PENDING)
             return
         }
 
@@ -90,7 +101,7 @@ const UploadFileModel = ({
         <>
             <UploadFileView
                 title={title}
-                handleChange={loadFile}
+                handleChange={changeFile}
                 feedback={feedback}
                 phase={phase}
                 onClick={handleClick}
