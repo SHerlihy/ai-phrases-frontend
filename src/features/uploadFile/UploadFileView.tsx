@@ -2,6 +2,8 @@ import UploadInput, { Props as PropsUpload } from '@/components/UploadInput'
 import ControlButton, { Props as PropsButton } from '@/components/controlButton/ControlButton'
 import { Card, CardTitle } from '@/components/ui/card'
 
+export const PLACEHOLDER = "ready to upload"
+
 export type Props =
     {
         title: string,
@@ -27,6 +29,7 @@ const UploadFileView = (
             <UploadInput
                 handleChange={handleChange}
                 disabled={phase === "pending"}
+                placeholder={PLACEHOLDER}
             />
             <ControlButton
                 feedback={feedback}

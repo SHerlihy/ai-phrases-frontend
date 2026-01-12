@@ -4,6 +4,13 @@ import UploadFileView from './UploadFileView'
 import { catchError } from '@/lib/async'
 import { Phase } from '@/components/controlButton/ControlButton'
 
+export const UNABLE = "file?"
+export const READY = "upload?"
+export const PENDING = "cancel?"
+export const ERROR = "retry?"
+
+export const ABORT_FROM_CHANGE = "user changed file"
+
 const UploadFileModel = ({
     title,
     loadFile,
@@ -16,7 +23,13 @@ const UploadFileModel = ({
     abortUpload: (reason?: any) => void
 }) => {
     const [phase, setPhase] = useState<Phase>("idle")
-    const [feedback, setFeedback] = useState("searching...")
+    const [feedback, setFeedback] = useState(UNABLE)
+
+    function changeFile(e: ChangeEvent<HTMLInputElement>) {
+        loadFile(e)
+        setPhase("ready")
+        setFeedback(READY)
+    }
 
     async function handleMutation() {
 
@@ -37,12 +50,6 @@ const UploadFileModel = ({
 
     useEffect(() => {
 
-        mutate(undefined)
-
-    }, [])
-
-    useEffect(() => {
-
         if (isSuccess) {
             setPhase("confirm")
             setFeedback(data)
@@ -51,13 +58,13 @@ const UploadFileModel = ({
 
         if (isError) {
             setPhase("error")
-            setFeedback("retry?")
+            setFeedback(ERROR)
             return
         }
 
         if (isPending) {
             setPhase("pending")
-            setFeedback("cancel?")
+            setFeedback(PENDING)
             return
         }
 
@@ -90,7 +97,7 @@ const UploadFileModel = ({
         <>
             <UploadFileView
                 title={title}
-                handleChange={loadFile}
+                handleChange={changeFile}
                 feedback={feedback}
                 phase={phase}
                 onClick={handleClick}

@@ -30,8 +30,8 @@ export async function handleGET<TRes = any>(uri: string, abortSignal?: AbortSign
 }
 
 
-type Resolve = (value: string) => void
-type Reject = (value: Error) => void
+export type Resolve = (value: string) => void
+export type Reject = (value: Error) => void
 type WithResolversRet = {
     promise: Promise<unknown>;
     resolve: Resolve;
