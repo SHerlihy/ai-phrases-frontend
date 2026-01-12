@@ -32,6 +32,7 @@ resource "aws_s3_object" "website" {
   bucket = var.bucket_id
   key    = each.value
   source = "${path.module}/website/${each.value}"
+  source_hash = filemd5("${path.module}/website/${each.value}")
 
   content_type = lookup(local.mime_types, split(".", each.value)[length(split(".", each.value)) - 1], "application/octet-stream")
 }
