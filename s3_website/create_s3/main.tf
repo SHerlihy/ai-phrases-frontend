@@ -12,7 +12,7 @@ provider "aws" {
 }
 
 resource "aws_s3_bucket" "website" {
-  bucket_prefix = "phrases"
+  bucket_prefix = "phrasesdev"
 }
 
 resource "aws_s3_bucket_public_access_block" "website" {
@@ -23,6 +23,11 @@ resource "aws_s3_bucket_public_access_block" "website" {
   ignore_public_acls      = false
   restrict_public_buckets = false
 }
+
+# resource "aws_s3_bucket_acl" "website" {
+#   bucket = aws_s3_bucket.website.id
+#   acl    = "public-read"
+# }
 
 resource "aws_s3_bucket_policy" "website" {
   bucket = aws_s3_bucket.website.id
@@ -49,10 +54,18 @@ resource "aws_s3_bucket_website_configuration" "website" {
   }
 }
 
+output "website_endpoint" {
+  value = aws_s3_bucket_website_configuration.website.website_endpoint
+}
+
+output "bucket_arn" {
+  value = aws_s3_bucket.website.arn
+}
+
 output "bucket_id" {
   value = aws_s3_bucket.website.id
 }
 
-output "website_endpoint" {
-  value = aws_s3_bucket_website_configuration.website.website_endpoint
+output "bucket_regional_domain_name" {
+  value = aws_s3_bucket.website.bucket_regional_domain_name
 }
