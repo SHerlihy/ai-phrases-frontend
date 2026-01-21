@@ -54,7 +54,6 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     viewer_protocol_policy = "redirect-to-https"
 
     cache_policy_id = local.disabled_cache
-    #cache_policy_id = "658327ea-f89d-4fab-a63d-7e88639e58f6"
   }
 
   price_class = "PriceClass_100"
@@ -93,7 +92,6 @@ data "aws_iam_policy_document" "cloudfront_access" {
     ]
 
     resources = [
-      "${var.bucket_arn}",
       "${var.bucket_arn}/*"
     ]
 

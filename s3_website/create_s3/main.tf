@@ -24,11 +24,6 @@ resource "aws_s3_bucket_public_access_block" "website" {
   restrict_public_buckets = false
 }
 
-# resource "aws_s3_bucket_acl" "website" {
-#   bucket = aws_s3_bucket.website.id
-#   acl    = "public-read"
-# }
-
 resource "aws_s3_bucket_policy" "website" {
   bucket = aws_s3_bucket.website.id
 
@@ -44,18 +39,6 @@ resource "aws_s3_bucket_policy" "website" {
       },
     ]
   })
-}
-
-resource "aws_s3_bucket_website_configuration" "website" {
-  bucket = aws_s3_bucket.website.id
-
-  index_document {
-    suffix = "index.html"
-  }
-}
-
-output "website_endpoint" {
-  value = aws_s3_bucket_website_configuration.website.website_endpoint
 }
 
 output "bucket_arn" {

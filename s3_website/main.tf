@@ -29,10 +29,6 @@ module "cdn" {
   bucket_regional_domain_name = module.s3.bucket_regional_domain_name
 }
 
-# output "website_endpoint" {
-#   value = module.s3.website_endpoint
-# }
-
 output "cdn_endpoint" {
   value = module.cdn.domain_name
 }
