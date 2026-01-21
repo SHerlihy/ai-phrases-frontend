@@ -13,7 +13,7 @@ describe('QueryStory', () => {
         render(
             <QueryClientProvider client={queryClient}>
                 <QueryStoryModel
-                    postMarkStory={(s) => Promise.resolve(returnStory)}
+                    postMarkStory={() => Promise.resolve(returnStory)}
                     abortMarkStory={() => { }}
                 />
             </QueryClientProvider>
@@ -25,7 +25,7 @@ describe('QueryStory', () => {
         render(
             <QueryClientProvider client={queryClient}>
                 <QueryStoryModel
-                    postMarkStory={(s) => Promise.resolve(returnStory)}
+                    postMarkStory={() => Promise.resolve(returnStory)}
                     abortMarkStory={() => { }}
                 />
             </QueryClientProvider>
@@ -54,7 +54,7 @@ describe('QueryStory', () => {
         render(
             <QueryClientProvider client={queryClient}>
                 <QueryStoryModel
-                    postMarkStory={(s) => Promise.resolve(returnStory)}
+                    postMarkStory={() => Promise.resolve(returnStory)}
                     abortMarkStory={() => { }}
                 />
             </QueryClientProvider>

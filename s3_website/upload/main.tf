@@ -26,6 +26,10 @@ locals {
   }
 }
 
+resource "terraform_data" "replacement" {
+  input = timestamp()
+}
+
 resource "aws_s3_object" "website" {
   for_each = fileset("${path.module}/website", "**/*")
 
@@ -35,4 +39,9 @@ resource "aws_s3_object" "website" {
   source_hash = filemd5("${path.module}/website/${each.value}")
 
   content_type = lookup(local.mime_types, split(".", each.value)[length(split(".", each.value)) - 1], "application/octet-stream")
+
+
+   lifecycle {
+      replace_triggered_by = [terraform_data.replacement]
+   }
 }
