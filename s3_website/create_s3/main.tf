@@ -12,7 +12,7 @@ provider "aws" {
 }
 
 resource "aws_s3_bucket" "website" {
-  bucket_prefix = "phrasesdev"
+  bucket_prefix = "phrases"
 }
 
 resource "aws_s3_bucket_public_access_block" "website" {
